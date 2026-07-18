@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Freelancer Signup</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <h2>Freelancer Signup</h2>
+  <form id="signupForm">
+    <input type="text" id="userName" placeholder="Username" required><br>
+    <input type="text" id="name" placeholder="Full Name" required><br>
+    <input type="email" id="emailId" placeholder="Email" required><br>
+    <input type="text" id="phone" placeholder="Phone"><br>
+    <input type="password" id="password" placeholder="Password" required><br>
+    <button type="submit">Sign Up</button>
+  </form>
+  <p id="message"></p>
+
+  <script>
+    document.getElementById('signupForm').addEventListener('submit', async (e) => {
+      e.preventDefault(); // stops the browser's default full-page-reload form submission
+
+      const userName = document.getElementById('userName').value;
+      const name = document.getElementById('name').value;
+      const emailId = document.getElementById('emailId').value;
+      const phone = document.getElementById('phone').value;
+      const password = document.getElementById('password').value;
+
+      const res = await fetch('http://localhost:3000/freelancer/signup', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ userName, name, emailId, phone, password })
+      });
+
+      const data = await res.json();
+
+      if (res.ok) {
+        document.getElementById('message').innerText = 'Signup successful! Redirecting to login...';
+        setTimeout(() => window.location.href = 'login.html', 1500);
+      } else {
+        document.getElementById('message').innerText = data.error || 'Signup failed';
+      }
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Pay for Project</title>
+  <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+</head>
+<body>
+  <h2 id="description">Loading...</h2>
+  <p id="price"></p>
+  <div id="previewContainer"></div>
+  <br>
+  <button id="payBtn">Pay Now</button>
+  <a id="downloadBtn" href="#" style="display:none;">
+    <button type="button">Download Original File</button>
+  </a>
+
+  <script>
+    const token = window.location.pathname.split('/')[2];
+
+    fetch(`/api/transaction/${token}/preview`)
+      .then(res => res.json())
+      .then(data => {
+        document.getElementById('description').innerText = data.description;
+        document.getElementById('price').innerText = `₹${data.price}`;
+
+        const isVideo = data.previewUrl.endsWith('.mp4');
+        document.getElementById('previewContainer').innerHTML = isVideo
+          ? `<video src="${data.previewUrl}" controls style="max-width:400px;"></video>`
+          : `<img src="${data.previewUrl}" style="max-width:400px;" />`;
+
+        if (data.status === 'paid') {
+          document.getElementById('payBtn').style.display = 'none';
+          const downloadBtn = document.getElementById('downloadBtn');
+          downloadBtn.href = `/transaction/${token}/download`;
+          downloadBtn.style.display = 'inline';
+        }
+      });
+
+    document.getElementById('payBtn').addEventListener('click', () => {
+      const payBtn = document.getElementById('payBtn');
+      payBtn.disabled = true;
+      payBtn.innerText = 'Loading...';
+
+      fetch(`/transaction/${token}/create-order`, { method: 'POST' })
+        .then(res => res.json())
+        .then(order => {
+          if (!order.orderId) {
+            alert(order.error || 'Could not start payment');
+            payBtn.disabled = false;
+            payBtn.innerText = 'Pay Now';
+            return;
+          }
+
+          const options = {
+            key: order.keyId,
+            amount: order.amount,
+            currency: order.currency,
+            order_id: order.orderId,
+            name: 'TrustClient',
+            description: 'Project Payment',
+            handler: function (response) {
+              fetch(`/transaction/${token}/verify`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(response)
+              })
+              .then(res => res.json())
+              .then(result => {
+                if (result.success) {
+                  document.getElementById('payBtn').style.display = 'none';
+                  const downloadBtn = document.getElementById('downloadBtn');
+                  downloadBtn.href = `/transaction/${token}/download`;
+                  downloadBtn.style.display = 'inline';
+                } else {
+                  alert('Payment verification failed.');
+                }
+              });
+            },
+            modal: {
+              ondismiss: function () {
+                payBtn.disabled = false;
+                payBtn.innerText = 'Pay Now';
+              }
+            }
+          };
+          const rzp = new Razorpay(options);
+          rzp.open();
+        })
+        .catch(err => {
+          console.error(err);
+          alert('Something went wrong starting payment.');
+          payBtn.disabled = false;
+          payBtn.innerText = 'Pay Now';
+        });
+    });
+  </script>
+</body>
+</html>

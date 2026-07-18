@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Dashboard</title>
+</head>
+<body>
+  <h2>Welcome, <span id="welcomeName"></span></h2>
+  <button id="logoutBtn">Logout</button>
+
+  <h3>Upload New Product</h3>
+  <form id="uploadForm">
+    <input type="number" id="product_price" placeholder="Price (INR)" required><br>
+    <textarea id="description" placeholder="Description" required></textarea><br>
+    <input type="file" id="file" required><br>
+    <button type="submit">Upload</button>
+  </form>
+  <p id="uploadMessage"></p>
+
+  <script>
+    const token = localStorage.getItem('token');
+    const userName = localStorage.getItem('userName');
+
+    // If no token, they're not logged in — kick them back to login
+    if (!token) {
+      window.location.href = 'login.html';
+    }
+
+    document.getElementById('welcomeName').innerText = userName;
+
+    document.getElementById('logoutBtn').addEventListener('click', () => {
+      localStorage.removeItem('token');
+      localStorage.removeItem('userName');
+      window.location.href = 'login.html';
+    });
+
+    document.getElementById('uploadForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+
+      const formData = new FormData();
+      formData.append('product_price', document.getElementById('product_price').value);
+      formData.append('description', document.getElementById('description').value);
+      formData.append('file', document.getElementById('file').files[0]);
+
+      const res = await fetch('http://localhost:3000/freelancer/products', {
+        method: 'POST',
+        headers: {
+          'Authorization': 'Bearer ' + token
+          // NOTE: no Content-Type header here — see explanation below
+        },
+        body: formData
+      });
+
+      const data = await res.json();
+
+      if (res.ok) {
+        document.getElementById('uploadMessage').innerText = 'Product uploaded! ID: ' + data.prod_id;
+        document.getElementById('uploadForm').reset();
+      } else {
+        document.getElementById('uploadMessage').innerText = data.error || 'Upload failed';
+      }
+    });
+  </script>
+</body>
+</html>

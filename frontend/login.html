@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Freelancer Login</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <h2>Freelancer Login</h2>
+  <form id="loginForm">
+    <input type="text" id="userName" placeholder="Username" required><br>
+    <input type="password" id="password" placeholder="Password" required><br>
+    <button type="submit">Login</button>
+  </form>
+  <p id="message"></p>
+
+  <script>
+    document.getElementById('loginForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+
+      const userName = document.getElementById('userName').value;
+      const password = document.getElementById('password').value;
+
+      const res = await fetch('http://localhost:3000/freelancer/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ userName, password })
+      });
+
+      const data = await res.json();
+
+      if (res.ok) {
+        localStorage.setItem('token', data.token);
+        localStorage.setItem('userName', userName);
+        window.location.href = 'dashboard.html';
+      } else {
+        document.getElementById('message').innerText = data.error || 'Login failed';
+      }
+    });
+  </script>
+</body>
+</html>
