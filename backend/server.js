@@ -25,10 +25,11 @@ const storage = multer.diskStorage({
 });
 const upload = multer({ storage: storage });
 require('dotenv').config();
-const app = express()
-const port = 3000
+const app = express();
+const port = 3000;
+
 app.use(cors({
-  origin: 'https://trustclient.vercel.app' // your real Vercel URL
+  origin: 'https://trustclient.vercel.app'
 }));
 app.use(express.static('public'));
 app.use('/uploads', express.static('uploads'));
@@ -208,7 +209,7 @@ app.post('/freelancer/products/:prod_id/send', authenticateToken, (req, res) => 
         return res.status(500).json({ error: 'Failed to create transaction link' });
       }
 
-      const shareableLink = `http://localhost:3000/transaction/${link_token}/preview`;
+    const shareableLink = `http://localhost:3000/transaction/${link_token}/preview`;
       res.status(201).json({ message: 'Link created', link: shareableLink });
     });
   });
@@ -265,7 +266,7 @@ app.get('/api/transaction/:token/preview', (req, res) => {
       description: data.description,
       price: data.product_price,
       status: data.transactionStatus,
-      previewUrl: `http://localhost:3000/${data.watermark_file_path}`
+previewUrl: `${process.env.BACKEND_URL}/${data.watermark_file_path}`
     });
   });
 });
