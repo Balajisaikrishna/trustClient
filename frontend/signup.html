@@ -17,6 +17,7 @@
   <p id="message"></p>
 
   <script>
+    const API_URL = 'http://localhost:3000';
     document.getElementById('signupForm').addEventListener('submit', async (e) => {
       e.preventDefault(); // stops the browser's default full-page-reload form submission
 
@@ -26,7 +27,7 @@
       const phone = document.getElementById('phone').value;
       const password = document.getElementById('password').value;
 
-      const res = await fetch('http://localhost:3000/freelancer/signup', {
+      const res = await fetch(`${API_URL}/freelancer/signup`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ userName, name, emailId, phone, password })

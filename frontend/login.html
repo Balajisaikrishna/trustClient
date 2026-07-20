@@ -14,13 +14,14 @@
   <p id="message"></p>
 
   <script>
+    const API_URL = 'http://localhost:3000';
     document.getElementById('loginForm').addEventListener('submit', async (e) => {
       e.preventDefault();
 
       const userName = document.getElementById('userName').value;
       const password = document.getElementById('password').value;
 
-      const res = await fetch('http://localhost:3000/freelancer/login', {
+      const res = await fetch(`${API_URL}/freelancer/login`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ userName, password })
