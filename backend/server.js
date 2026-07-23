@@ -36,7 +36,7 @@ const app = express();
 const port = 3000;
 
 app.use(cors({
-  origin: "https://trust-client-rose.vercel.app"
+  origin: "https://trust-client-ap4iyq53b-balajisaikrishnas-projects.vercel.app"
 }));
 app.use(express.static('public'));
 app.use('/uploads', express.static('uploads'));
@@ -93,6 +93,58 @@ app.post('/freelancer/login', (req, res) => {
     res.json({ message: 'Login successful', token });
   });
 })
+// async function createWatermark(originalPath, outputPath) {
+//   const image = sharp(originalPath);
+//   const metadata = await image.metadata();
+//   const width = metadata.width;
+//   const height = metadata.height;
+
+//   const text = 'TrustClient PREVIEW';
+//   const fontSize = Math.floor(width / 15);
+
+//   // Generate a grid of repeated watermark text across the image
+//   let textElements = '';
+//   const rows = 4;
+//   const cols = 3;
+//   for (let row = 0; row < rows; row++) {
+//     for (let col = 0; col < cols; col++) {
+//       const x = (width / cols) * col + (width / cols) / 2;
+//       const y = (height / rows) * row + (height / rows) / 2;
+//       textElements += `<text x="${x}" y="${y}" font-size="${fontSize}" fill="rgba(255,255,255,0.4)" 
+//                           text-anchor="middle" transform="rotate(-30 ${x} ${y})">${text}</text>`;
+//     }
+//   }
+
+//   const watermarkSvg = `
+//     <svg width="${width}" height="${height}">
+//       ${textElements}
+//     </svg>
+//   `;
+
+//   await sharp(originalPath)
+//     .composite([{
+//       input: Buffer.from(watermarkSvg),
+//       gravity: 'center'
+//     }])
+//     .toFile(outputPath);
+// }
+// function createVideoWatermark(originalPath, outputPath) {
+//   return new Promise((resolve, reject) => {
+//     const text = 'TrustClient PREVIEW';
+//     const fontsize = 100; // bumped up from 40
+
+//     ffmpeg(originalPath)
+//       .videoFilters([
+//         { filter: 'drawtext', options: { text, fontsize, fontcolor: 'white@0.5', x: '(w-text_w)/2', y: '(h-text_h)/4' } },
+//         { filter: 'drawtext', options: { text, fontsize, fontcolor: 'white@0.5', x: '(w-text_w)/2', y: '(h-text_h)/2' } },
+//         { filter: 'drawtext', options: { text, fontsize, fontcolor: 'white@0.5', x: '(w-text_w)/2', y: '3*(h-text_h)/4' } }
+//       ])
+//       .outputOptions('-c:a copy') // keep original audio untouched
+//       .on('end', () => resolve())
+//       .on('error', (err) => reject(err))
+//       .save(outputPath);
+//   });
+// }
 async function createWatermark(originalPath, outputPath) {
   const image = sharp(originalPath);
   const metadata = await image.metadata();
@@ -102,7 +154,7 @@ async function createWatermark(originalPath, outputPath) {
   const text = 'TrustClient PREVIEW';
   const fontSize = Math.floor(width / 15);
 
-  // Generate a grid of repeated watermark text across the image
+  // Generate a grid of repeated watermark text
   let textElements = '';
   const rows = 4;
   const cols = 3;
@@ -110,13 +162,19 @@ async function createWatermark(originalPath, outputPath) {
     for (let col = 0; col < cols; col++) {
       const x = (width / cols) * col + (width / cols) / 2;
       const y = (height / rows) * row + (height / rows) / 2;
-      textElements += `<text x="${x}" y="${y}" font-size="${fontSize}" fill="rgba(255,255,255,0.4)" 
-                          text-anchor="middle" transform="rotate(-30 ${x} ${y})">${text}</text>`;
+      textElements += `
+        <text x="${x}" y="${y}" 
+              font-size="${fontSize}" 
+              fill="rgba(255,255,255,0.4)" 
+              font-family="Arial, sans-serif"
+              text-anchor="middle" 
+              transform="rotate(-30 ${x} ${y})">${text}</text>`;
     }
   }
 
+  // Add xmlns and proper SVG structure
   const watermarkSvg = `
-    <svg width="${width}" height="${height}">
+    <svg width="${width}" height="${height}" xmlns="http://www.w3.org/2000/svg">
       ${textElements}
     </svg>
   `;
@@ -131,15 +189,48 @@ async function createWatermark(originalPath, outputPath) {
 function createVideoWatermark(originalPath, outputPath) {
   return new Promise((resolve, reject) => {
     const text = 'TrustClient PREVIEW';
-    const fontsize = 100; // bumped up from 40
+    const fontsize = 100;
+    
+    // Common system font path (adjust if needed for your server)
+    const fontPath = '/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf';
 
     ffmpeg(originalPath)
       .videoFilters([
-        { filter: 'drawtext', options: { text, fontsize, fontcolor: 'white@0.5', x: '(w-text_w)/2', y: '(h-text_h)/4' } },
-        { filter: 'drawtext', options: { text, fontsize, fontcolor: 'white@0.5', x: '(w-text_w)/2', y: '(h-text_h)/2' } },
-        { filter: 'drawtext', options: { text, fontsize, fontcolor: 'white@0.5', x: '(w-text_w)/2', y: '3*(h-text_h)/4' } }
+        {
+          filter: 'drawtext',
+          options: {
+            text,
+            fontsize,
+            fontcolor: 'white@0.5',
+            fontfile: fontPath,              // ← explicit font file
+            x: '(w-text_w)/2',
+            y: '(h-text_h)/4'
+          }
+        },
+        {
+          filter: 'drawtext',
+          options: {
+            text,
+            fontsize,
+            fontcolor: 'white@0.5',
+            fontfile: fontPath,
+            x: '(w-text_w)/2',
+            y: '(h-text_h)/2'
+          }
+        },
+        {
+          filter: 'drawtext',
+          options: {
+            text,
+            fontsize,
+            fontcolor: 'white@0.5',
+            fontfile: fontPath,
+            x: '(w-text_w)/2',
+            y: '3*(h-text_h)/4'
+          }
+        }
       ])
-      .outputOptions('-c:a copy') // keep original audio untouched
+      .outputOptions('-c:a copy')
       .on('end', () => resolve())
       .on('error', (err) => reject(err))
       .save(outputPath);

@@ -1,4 +1,4 @@
-*{margin:0;padding:0;box-sizing:border-box;font-family:Inter,"Segoe UI",sans-serif}
+/* *{margin:0;padding:0;box-sizing:border-box;font-family:Inter,"Segoe UI",sans-serif}
 :root{
 --bg:#08090c;
 --card:#111318;
@@ -185,4 +185,423 @@ font-size:34px;
 .preview-section{
 padding:15px;
 }
+} */
+ * {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: Inter, "Segoe UI", sans-serif;
+}
+
+:root {
+    --bg: #08090c;
+    --card: #111318;
+    --text: #f8fafc;
+    --muted: #94a3b8;
+    --border: rgba(255, 255, 255, .08);
+    --accent: #6366f1;
+    --shadow: 0 25px 70px rgba(0, 0, 0, .45);
+    --button: #fff;
+    --buttonText: #111827;
+}
+
+body {
+    min-height: 100vh;
+    background: radial-gradient(circle at top right, rgba(99, 102, 241, .18), transparent 35%), var(--bg);
+    color: var(--text);
+}
+
+.payment-header {
+    height: 85px;
+    padding: 0 6%;
+    display: flex;
+    align-items: center;
+}
+
+.brand {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.brand-icon {
+    width: 44px;
+    height: 44px;
+    border-radius: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(135deg, #6366f1, #3b82f6);
+    color: white;
+    font-size: 18px;
+    font-weight: 800;
+    box-shadow: 0 12px 30px rgba(99, 102, 241, .35);
+}
+
+.brand-name {
+    font-size: 26px;
+    font-weight: 800;
+    letter-spacing: -1px;
+}
+
+.payment-container {
+    width: 90%;
+    max-width: 1200px;
+    margin: 40px auto;
+}
+
+.payment-card {
+    display: grid;
+    grid-template-columns: 1.1fr .9fr;
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 30px;
+    overflow: hidden;
+    box-shadow: var(--shadow);
+    animation: show .6s ease;
+}
+
+.preview-section {
+    min-height: 600px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 40px;
+    background: #0c0d12;
+    position: relative;
+}
+
+.preview-wrapper {
+    position: relative;
+    display: inline-block;
+    max-width: 100%;
+}
+
+#previewContainer {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+#previewContainer img,
+#previewContainer video {
+    width: 100%;
+    max-width: 520px;
+    max-height: 520px;
+    object-fit: contain;
+    border-radius: 22px;
+    box-shadow: 0 20px 50px rgba(0, 0, 0, .4);
+    display: block;
+}
+
+.fullscreen-trigger {
+    position: absolute;
+    top: 14px;
+    right: 14px;
+    width: 42px;
+    height: 42px;
+    border-radius: 13px;
+    background: rgba(0, 0, 0, 0.45);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.18);
+    color: #fff;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.28s cubic-bezier(0.22, 0.61, 0.36, 1);
+    z-index: 5;
+    opacity: 0;
+    pointer-events: none;
+    transform: translateY(-6px);
+}
+
+.fullscreen-trigger.visible {
+    opacity: 1;
+    pointer-events: auto;
+    transform: translateY(0);
+}
+
+.fullscreen-trigger:hover {
+    background: rgba(99, 102, 241, 0.55);
+    border-color: rgba(99, 102, 241, 0.65);
+    transform: scale(1.1);
+    box-shadow: 0 8px 28px rgba(99, 102, 241, 0.3);
+}
+
+.fullscreen-trigger:active {
+    transform: scale(0.94);
+    transition: transform 0.12s ease;
+}
+
+.fullscreen-trigger svg {
+    width: 17px;
+    height: 17px;
+    pointer-events: none;
+}
+
+.glass-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.7);
+    backdrop-filter: blur(32px);
+    -webkit-backdrop-filter: blur(32px);
+    z-index: 10000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.38s cubic-bezier(0.22, 0.61, 0.36, 1);
+}
+
+.glass-overlay.active {
+    opacity: 1;
+    pointer-events: auto;
+}
+
+.glass-overlay::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(ellipse at center, transparent 40%, rgba(0, 0, 0, 0.45) 100%);
+    pointer-events: none;
+    z-index: 0;
+}
+
+.glass-content {
+    position: relative;
+    z-index: 1;
+    max-width: 88vw;
+    max-height: 88vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transform: scale(0.88);
+    transition: transform 0.42s cubic-bezier(0.22, 0.61, 0.36, 1);
+}
+
+.glass-overlay.active .glass-content {
+    transform: scale(1);
+}
+
+.glass-content img,
+.glass-content video {
+    max-width: 85vw;
+    max-height: 85vh;
+    object-fit: contain;
+    border-radius: 20px;
+    box-shadow: 0 30px 90px rgba(0, 0, 0, 0.55), 0 0 0 1px rgba(255, 255, 255, 0.08);
+    display: block;
+}
+
+.glass-close {
+    position: absolute;
+    top: 28px;
+    right: 28px;
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.07);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    color: #fff;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.28s ease;
+    z-index: 2;
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+}
+
+.glass-close:hover {
+    background: rgba(255, 255, 255, 0.16);
+    border-color: rgba(255, 255, 255, 0.35);
+    transform: rotate(90deg) scale(1.06);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.4);
+}
+
+.glass-close:active {
+    transform: rotate(90deg) scale(0.92);
+    transition: transform 0.12s ease;
+}
+
+.glass-close svg {
+    width: 18px;
+    height: 18px;
+    pointer-events: none;
+}
+
+.payment-section {
+    padding: 55px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+.badge {
+    width: max-content;
+    padding: 8px 16px;
+    border-radius: 50px;
+    background: rgba(99, 102, 241, .15);
+    color: #818cf8;
+    font-size: 14px;
+    font-weight: 700;
+    margin-bottom: 25px;
+}
+
+#description {
+    font-size: 38px;
+    font-weight: 800;
+    line-height: 1.2;
+    letter-spacing: -1px;
+    margin-bottom: 20px;
+}
+
+.price {
+    font-size: 42px;
+    font-weight: 800;
+    margin-bottom: 20px;
+}
+
+.info {
+    color: var(--muted);
+    line-height: 1.7;
+    margin-bottom: 35px;
+}
+
+#payBtn,
+#downloadBtn button {
+    width: 100%;
+    height: 58px;
+    border: none;
+    border-radius: 16px;
+    font-size: 16px;
+    font-weight: 700;
+    cursor: pointer;
+}
+
+#payBtn {
+    background: var(--button);
+    color: var(--buttonText);
+}
+
+#payBtn:hover,
+#downloadBtn button:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 15px 35px rgba(0, 0, 0, .25);
+}
+
+#payBtn:disabled {
+    opacity: .7;
+    cursor: not-allowed;
+}
+
+#downloadBtn {
+    text-decoration: none;
+    width: 100%;
+}
+
+#downloadBtn button {
+    background: #22c55e;
+    color: white;
+}
+
+@keyframes show {
+    from {
+        opacity: 0;
+        transform: translateY(25px)
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0)
+    }
+}
+
+@media(max-width:900px) {
+    .payment-card {
+        grid-template-columns: 1fr;
+    }
+    .preview-section {
+        min-height: 350px;
+        padding: 25px;
+    }
+    .payment-section {
+        padding: 35px;
+    }
+    #description {
+        font-size: 30px;
+    }
+    .glass-close {
+        top: 18px;
+        right: 18px;
+        width: 42px;
+        height: 42px;
+    }
+    .glass-content img,
+    .glass-content video {
+        max-width: 92vw;
+        max-height: 80vh;
+        border-radius: 14px;
+    }
+    .fullscreen-trigger {
+        width: 38px;
+        height: 38px;
+        border-radius: 11px;
+        top: 10px;
+        right: 10px;
+    }
+    .fullscreen-trigger svg {
+        width: 15px;
+        height: 15px;
+    }
+}
+
+@media(max-width:500px) {
+    .payment-header {
+        padding: 0 20px;
+    }
+    .brand-name {
+        font-size: 22px;
+    }
+    .payment-container {
+        width: 94%;
+        margin: 20px auto;
+    }
+    .payment-section {
+        padding: 25px;
+    }
+    #description {
+        font-size: 25px;
+    }
+    .price {
+        font-size: 34px;
+    }
+    .preview-section {
+        padding: 15px;
+    }
+    .glass-close {
+        top: 14px;
+        right: 14px;
+        width: 38px;
+        height: 38px;
+    }
+    .glass-close svg {
+        width: 15px;
+        height: 15px;
+    }
+    .fullscreen-trigger {
+        width: 34px;
+        height: 34px;
+        border-radius: 10px;
+        top: 8px;
+        right: 8px;
+    }
+    .fullscreen-trigger svg {
+        width: 14px;
+        height: 14px;
+    }
 }
