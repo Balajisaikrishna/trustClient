@@ -245,7 +245,7 @@ app.get('/freelancer/products', authenticateToken, (req, res) => {
     res.json(results);
   });
 });
-app.post('/freelancer/products', upload.single('file'), async (req, res) => {
+app.post('/freelancer/products',authenticateToken, upload.single('file'), async (req, res) => {
    console.log("Route reached");
     res.json({
         success:true
