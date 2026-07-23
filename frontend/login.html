@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+<!-- <!DOCTYPE html>
 <html>
 <head>
   <title>Freelancer Login</title>
@@ -38,5 +38,181 @@
       }
     });
   </script>
+</body>
+</html> -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>TrustClient | Login</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+<link rel="stylesheet" href="style.css">
+
+</head>
+
+<body>
+
+<header>
+
+<div class="logo">
+
+<div class="logo-icon">
+TC
+</div>
+
+<div class="logo-text">
+<span>Trust</span>Client
+</div>
+
+</div>
+
+<div class="header-right">
+
+<button id="themeToggle" class="theme-btn">
+🌙
+</button>
+
+<a href="signup.html" class="login-btn">
+Sign Up →
+</a>
+
+</div>
+
+</header>
+
+<main>
+
+<div class="card">
+
+<h1>Welcome back</h1>
+
+<p class="subtitle">
+Sign in to continue to your TrustClient dashboard.
+</p>
+
+<form id="loginForm">
+
+<div class="input-group">
+
+<label>Username</label>
+
+<input
+type="text"
+id="userName"
+placeholder="Enter your username"
+required>
+
+</div>
+
+<div class="input-group">
+
+<label>Password</label>
+
+<input
+type="password"
+id="password"
+placeholder="Enter your password"
+required>
+
+</div>
+
+<button
+type="submit"
+class="submit-btn">
+
+Login
+
+</button>
+
+<p id="message"></p>
+
+</form>
+
+<div class="bottom-text">
+
+Don't have an account?
+
+<a href="signup.html">
+Sign Up
+</a>
+
+</div>
+
+</div>
+
+</main>
+
+<script>
+
+const btn=document.getElementById("themeToggle");
+
+if(localStorage.getItem("theme")==="light"){
+document.body.classList.add("light");
+btn.innerHTML="☀️";
+}
+
+btn.onclick=()=>{
+
+document.body.classList.toggle("light");
+
+if(document.body.classList.contains("light")){
+localStorage.setItem("theme","light");
+btn.innerHTML="☀️";
+}else{
+localStorage.setItem("theme","dark");
+btn.innerHTML="🌙";
+}
+
+};
+
+const API_URL='https://trustclient-production.up.railway.app';
+
+document.getElementById('loginForm').addEventListener('submit',async(e)=>{
+
+e.preventDefault();
+
+const userName=document.getElementById('userName').value;
+const password=document.getElementById('password').value;
+
+const res=await fetch(`${API_URL}/freelancer/login`,{
+
+method:'POST',
+
+headers:{
+'Content-Type':'application/json'
+},
+
+body:JSON.stringify({
+userName,
+password
+})
+
+});
+
+const data=await res.json();
+
+if(res.ok){
+
+localStorage.setItem('token',data.token);
+localStorage.setItem('userName',userName);
+
+window.location.href='dashboard.html';
+
+}else{
+
+document.getElementById('message').innerText=data.error||'Login failed';
+
+}
+
+});
+
+</script>
+
 </body>
 </html>
