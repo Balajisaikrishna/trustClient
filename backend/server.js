@@ -10,6 +10,13 @@ const ffmpeg = require('fluent-ffmpeg');
 const crypto = require('crypto');
 const Razorpay = require('razorpay');
 const cors = require('cors');
+const fs = require('fs');
+const uploadDirs = ['uploads/original', 'uploads/preview'];
+uploadDirs.forEach(dir => {
+  if (!fs.existsSync(dir)) {
+    fs.mkdirSync(dir, { recursive: true });
+  }
+});
 const razorpay = new Razorpay({
   key_id: process.env.RAZORPAY_KEY_ID,
   key_secret: process.env.RAZORPAY_KEY_SECRET
