@@ -758,20 +758,17 @@ gap:28px;
 
 }
 
-.card{
-
-background:var(--card);
-
-border:1px solid var(--border);
-
-border-radius:24px;
-
-overflow:hidden;
-
-transition:.35s;
-
-box-shadow:var(--shadow);
-
+.card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 24px;
+    overflow: hidden;
+    transition: .35s;
+    box-shadow: var(--shadow);
+    width: 453px;
+    height: 453px;
+    padding: 10px;
+    margin: 5px 0px;
 }
 
 .card:hover{
@@ -1813,21 +1810,12 @@ align-items:center;
 gap:16px;
 
 }
-
-.dashboard{
-
-width:min(1500px,94%);
-
-margin:40px auto;
-
-display:flex;
-
-flex-direction:column;
-
-gap:42px;
-
-min-height:calc(100vh - 100px);
-
+.dashboard {
+    width: min(1400px, 92%);
+    margin: auto;
+    padding: 10px 0 60px;
+    display: flex;
+    flex-direction: column;
 }
 
 .hero{
