@@ -4,31 +4,26 @@ const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const authenticateToken = require('./middleware/auth');
 const multer = require('multer');
-const path = require('path');
-const sharp = require('sharp');
+const path = require('path')
+const sharp = require('sharp')
 const ffmpeg = require('fluent-ffmpeg');
 const crypto = require('crypto');
 const Razorpay = require('razorpay');
 const cors = require('cors');
 const fs = require('fs');
-
-// Ensure upload directories exist
 const uploadDirs = ['uploads/original', 'uploads/preview'];
+const ffmpegPath = require('@ffmpeg-installer/ffmpeg').path;
+ffmpeg.setFfmpegPath(ffmpegPath);
+
 uploadDirs.forEach(dir => {
   if (!fs.existsSync(dir)) {
     fs.mkdirSync(dir, { recursive: true });
   }
 });
-
-// Set static FFmpeg binary path (from @ffmpeg-installer)
-const ffmpegPath = require('@ffmpeg-installer/ffmpeg').path;
-ffmpeg.setFfmpegPath(ffmpegPath);
-
 const razorpay = new Razorpay({
   key_id: process.env.RAZORPAY_KEY_ID,
   key_secret: process.env.RAZORPAY_KEY_SECRET
 });
-
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
     cb(null, './uploads/original');
@@ -39,7 +34,6 @@ const storage = multer.diskStorage({
   }
 });
 const upload = multer({ storage: storage });
-
 require('dotenv').config();
 const app = express();
 const port = 3000;
@@ -50,12 +44,9 @@ app.use(cors({
 app.use(express.static('public'));
 app.use('/uploads', express.static('uploads'));
 app.use(express.json());
-
 app.get('/', (req, res) => {
-  res.send('Hello World!');
-});
-
-// ─── Auth routes ────────────────────────────────────────────
+  res.send('Hello World!')
+})
 app.post('/freelancer/signup', async (req, res) => {
   const { userName, name, emailId, phone, password } = req.body;
   if (!userName || !name || !emailId || !phone || !password) {
@@ -75,23 +66,27 @@ app.post('/freelancer/signup', async (req, res) => {
     res.status(500).json({ error: 'Something went wrong' });
   }
 });
-
 app.post('/freelancer/login', (req, res) => {
   const { userName, password } = req.body;
+
   if (!userName || !password) {
     return res.status(400).json({ error: 'Missing username or password' });
   }
   const sql = `SELECT * FROM freeLancer WHERE userName = ?`;
   db.query(sql, [userName], async (err, results) => {
     if (err) return res.status(500).json({ error: 'Login failed' });
+
     if (results.length === 0) {
       return res.status(401).json({ error: 'Invalid username or password' });
     }
+
     const freelancer = results[0];
     const match = await bcrypt.compare(password, freelancer.password);
+
     if (!match) {
       return res.status(401).json({ error: 'Invalid username or password' });
     }
+
     const token = jwt.sign(
       { userName: freelancer.userName },
       process.env.JWT_SECRET,
@@ -99,9 +94,60 @@ app.post('/freelancer/login', (req, res) => {
     );
     res.json({ message: 'Login successful', token });
   });
-});
+})
+// async function createWatermark(originalPath, outputPath) {
+//   const image = sharp(originalPath);
+//   const metadata = await image.metadata();
+//   const width = metadata.width;
+//   const height = metadata.height;
 
-// ─── Watermarking functions ─────────────────────────────────
+//   const text = 'TrustClient PREVIEW';
+//   const fontSize = Math.floor(width / 15);
+
+//   // Generate a grid of repeated watermark text across the image
+//   let textElements = '';
+//   const rows = 4;
+//   const cols = 3;
+//   for (let row = 0; row < rows; row++) {
+//     for (let col = 0; col < cols; col++) {
+//       const x = (width / cols) * col + (width / cols) / 2;
+//       const y = (height / rows) * row + (height / rows) / 2;
+//       textElements += `<text x="${x}" y="${y}" font-size="${fontSize}" fill="rgba(255,255,255,0.4)" 
+//                           text-anchor="middle" transform="rotate(-30 ${x} ${y})">${text}</text>`;
+//     }
+//   }
+
+//   const watermarkSvg = `
+//     <svg width="${width}" height="${height}">
+//       ${textElements}
+//     </svg>
+//   `;
+
+//   await sharp(originalPath)
+//     .composite([{
+//       input: Buffer.from(watermarkSvg),
+//       gravity: 'center'
+//     }])
+//     .toFile(outputPath);
+// }
+// function createVideoWatermark(originalPath, outputPath) {
+//   return new Promise((resolve, reject) => {
+//     const text = 'TrustClient PREVIEW';
+//     const fontsize = 100; // bumped up from 40
+
+//     ffmpeg(originalPath)
+//       .videoFilters([
+//         { filter: 'drawtext', options: { text, fontsize, fontcolor: 'white@0.5', x: '(w-text_w)/2', y: '(h-text_h)/4' } },
+//         { filter: 'drawtext', options: { text, fontsize, fontcolor: 'white@0.5', x: '(w-text_w)/2', y: '(h-text_h)/2' } },
+//         { filter: 'drawtext', options: { text, fontsize, fontcolor: 'white@0.5', x: '(w-text_w)/2', y: '3*(h-text_h)/4' } }
+//       ])
+//       .outputOptions('-c:a copy') // keep original audio untouched
+//       .on('end', () => resolve())
+//       .on('error', (err) => reject(err))
+//       .save(outputPath);
+//   });
+// }
+
 async function createWatermark(originalPath, outputPath) {
   const image = sharp(originalPath);
   const metadata = await image.metadata();
@@ -111,6 +157,7 @@ async function createWatermark(originalPath, outputPath) {
   const text = 'TrustClient PREVIEW';
   const fontSize = Math.floor(width / 15);
 
+  // Generate a grid of repeated watermark text
   let textElements = '';
   const rows = 4;
   const cols = 3;
@@ -128,6 +175,7 @@ async function createWatermark(originalPath, outputPath) {
     }
   }
 
+  // Add xmlns and proper SVG structure
   const watermarkSvg = `
     <svg width="${width}" height="${height}" xmlns="http://www.w3.org/2000/svg">
       ${textElements}
@@ -141,100 +189,75 @@ async function createWatermark(originalPath, outputPath) {
     }])
     .toFile(outputPath);
 }
-
-// New video watermark – uses Sharp to render text on a transparent PNG,
-// then overlays it with FFmpeg. No font file required.
 function createVideoWatermark(originalPath, outputPath) {
   return new Promise((resolve, reject) => {
-    // Get video dimensions first
-    ffmpeg.ffprobe(originalPath, (err, metadata) => {
-      if (err) return reject(err);
+    
+    ffmpeg(originalPath)
+      .videoFilters([
+        { filter: 'drawtext', options: { text, fontsize, fontcolor: 'white@0.5', x: '(w-text_w)/2', y: '(h-text_h)/4' } },
+        { filter: 'drawtext', options: { text, fontsize, fontcolor: 'white@0.5', x: '(w-text_w)/2', y: '(h-text_h)/2' } },
+        { filter: 'drawtext', options: { text, fontsize, fontcolor: 'white@0.5', x: '(w-text_w)/2', y: '3*(h-text_h)/4' } }
+      ])
+      .outputOptions('-c:a copy') // keep original audio untouched
+      .on('end', () => resolve())
+      .on('error', (err) => reject(err))
+      .save(outputPath);
+    // ffmpeg(originalPath)
+    //   .videoFilters([
+    //     {
+    //       filter: "scale",
+    //       options: "1280:-2"
+    //     },
+    //     {
+    //       filter: "drawtext",
+    //       options: {
+    //         text: "TrustClient PREVIEW",
+    //         fontsize: 50,
+    //         fontcolor: "white@0.5",
+    //         x: "(w-text_w)/2",
+    //         y: "(h-text_h)/2"
+    //       }
+    //     }
+    //   ])
+    //   .outputOptions([
+    //     "-c:v",
+    //     "libx264",
+    //     "-preset",
+    //     "ultrafast",
+    //     "-crf",
+    //     "28",
+    //     "-c:a",
+    //     "copy"
+    //   ])
+    //   .on("start", command => {
+    //     console.log(command);
+    //   })
+    //   .on("stderr", line => {
+    //     console.log(line);
+    //   })
+    //   .on("end", () => {
+    //     console.log("Video watermark completed");
+    //     resolve();
+    //   })
+    //   .on("error", err => {
+    //     console.error(err);
+    //     reject(err);
+    //   })
+    //   .save(outputPath);
 
-      const videoStream = metadata.streams.find(s => s.codec_type === 'video');
-      if (!videoStream) return reject(new Error('No video stream found'));
-
-      const width = videoStream.width;
-      const height = videoStream.height;
-      const text = 'TrustClient PREVIEW';
-      const fontSize = Math.floor(width / 12);
-
-      // Build SVG with transparent background (same style as images)
-      let textElements = '';
-      const rows = 4;
-      const cols = 3;
-      for (let row = 0; row < rows; row++) {
-        for (let col = 0; col < cols; col++) {
-          const x = (width / cols) * col + (width / cols) / 2;
-          const y = (height / rows) * row + (height / rows) / 2;
-          textElements += `
-            <text x="${x}" y="${y}" 
-                  font-size="${fontSize}" 
-                  fill="rgba(255,255,255,0.4)" 
-                  font-family="Arial, sans-serif"
-                  text-anchor="middle" 
-                  transform="rotate(-30 ${x} ${y})">${text}</text>`;
-        }
-      }
-      const watermarkSvg = `
-        <svg width="${width}" height="${height}" xmlns="http://www.w3.org/2000/svg">
-          <rect width="100%" height="100%" fill="transparent"/>
-          ${textElements}
-        </svg>
-      `;
-
-      // Temporary PNG path for the overlay
-      const overlayPath = outputPath.replace('.mp4', '-overlay.png');
-
-      // Render the SVG to a transparent PNG
-      sharp({
-        create: {
-          width: width,
-          height: height,
-          channels: 4,
-          background: { r: 0, g: 0, b: 0, alpha: 0 } // fully transparent
-        }
-      })
-      .composite([{ input: Buffer.from(watermarkSvg), gravity: 'center' }])
-      .png()
-      .toFile(overlayPath)
-      .then(() => {
-        // Now overlay the PNG onto the video
-        ffmpeg(originalPath)
-          .input(overlayPath)
-          .complexFilter([
-            {
-              filter: 'overlay',
-              options: { x: 0, y: 0 } // overlay covers entire frame
-            }
-          ])
-          .outputOptions('-c:a copy')
-          .on('end', () => {
-            // Clean up temporary overlay file
-            fs.unlink(overlayPath, () => {});
-            resolve();
-          })
-          .on('error', (err) => {
-            fs.unlink(overlayPath, () => {});
-            reject(err);
-          })
-          .save(outputPath);
-      })
-      .catch(err => reject(err));
-    });
   });
 }
-
-// ─── Product routes ─────────────────────────────────────────
 app.get('/freelancer/products', authenticateToken, (req, res) => {
   const userName = req.freelancer.userName;
+
   const sql = `SELECT * FROM product WHERE userName = ?`;
   db.query(sql, [userName], (err, results) => {
     if (err) return res.status(500).json({ error: 'Server error' });
     res.json(results);
   });
 });
-
-app.post('/freelancer/products', authenticateToken, upload.single('file'), async (req, res) => {
+app.post('/freelancer/products',authenticateToken, upload.single('file'), async (req, res) => {
+   console.log("Route reached");
   const { product_price, description } = req.body;
   const userName = req.freelancer.userName;
   const price = Number(product_price);
@@ -248,7 +271,7 @@ app.post('/freelancer/products', authenticateToken, upload.single('file'), async
   }
 
   const original_file_path = req.file.path;
-  const mimeType = req.file.mimetype;
+  const mimeType = req.file.mimetype; // e.g. "image/png", "video/mp4"
 
   let watermark_file_path;
 
@@ -263,9 +286,11 @@ app.post('/freelancer/products', authenticateToken, upload.single('file'), async
       return res.status(400).json({ error: 'Unsupported file type for now' });
     }
   } catch (err) {
-    console.error('Watermark generation failed:', err);
-    return res.status(500).json({ error: 'Failed to process file' });
-  }
+  console.error('Watermark generation failed:', err);
+  // also log the stack
+  console.error(err.stack);
+  return res.status(500).json({ error: 'Failed to process file' });
+}
 
   const sql = `INSERT INTO product (userName, product_price, description, original_file_path, watermark_file_path) VALUES (?, ?, ?, ?, ?)`;
   db.query(sql, [userName, product_price, description, original_file_path, watermark_file_path], (err, result) => {
@@ -276,7 +301,6 @@ app.post('/freelancer/products', authenticateToken, upload.single('file'), async
     res.status(201).json({ message: 'Product created', prod_id: result.insertId });
   });
 });
-
 app.post('/freelancer/products/:prod_id/send', authenticateToken, (req, res) => {
   const { prod_id } = req.params;
   const userName = req.freelancer.userName;
@@ -289,23 +313,24 @@ app.post('/freelancer/products/:prod_id/send', authenticateToken, (req, res) => 
     }
 
     const link_token = crypto.randomBytes(32).toString('hex');
+
     const insertSql = `INSERT INTO transaction (link_token, prod_id) VALUES (?, ?)`;
     db.query(insertSql, [link_token, prod_id], (err, result) => {
       if (err) {
         console.error(err);
         return res.status(500).json({ error: 'Failed to create transaction link' });
       }
+
       const shareableLink = `${process.env.BACKEND_URL}/transaction/${link_token}/preview`;
       res.status(201).json({ message: 'Link created', link: shareableLink });
     });
   });
 });
-
 app.delete('/freelancer/products/:prod_id', authenticateToken, (req, res) => {
   const prodId = req.params.prod_id;
   const userName = req.freelancer.userName;
 
-  // 1. Fetch product to get file paths
+  // 1. Fetch product to get file paths and ownership
   db.query(
     'SELECT original_file_path, watermark_file_path FROM product WHERE prod_id = ? AND userName = ?',
     [prodId, userName],
@@ -318,7 +343,7 @@ app.delete('/freelancer/products/:prod_id', authenticateToken, (req, res) => {
       const product = results[0];
       const filesToDelete = [product.original_file_path, product.watermark_file_path].filter(Boolean);
 
-      // 2. Delete files from filesystem (ignore errors)
+      // 2. Remove files from disk (ignore errors)
       filesToDelete.forEach(filePath => {
         const fullPath = path.resolve(filePath);
         if (fs.existsSync(fullPath)) {
@@ -349,7 +374,6 @@ app.delete('/freelancer/products/:prod_id', authenticateToken, (req, res) => {
     }
   );
 });
-
 app.post('/freelancer/connect-razorpay', authenticateToken, async (req, res) => {
   const userName = req.freelancer.userName;
   const { email, phone, legal_business_name, ifsc, account_number, beneficiary_name } = req.body;
@@ -364,6 +388,8 @@ app.post('/freelancer/connect-razorpay', authenticateToken, async (req, res) => 
       contact_name: beneficiary_name
     });
 
+    await razorpay.accounts.create; // placeholder guard, real bank linking below
+
     const sql = `UPDATE freeLancer SET razorpay_account_id = ? WHERE userName = ?`;
     db.query(sql, [account.id, userName], (err) => {
       if (err) return res.status(500).json({ error: 'Failed to save account' });
@@ -374,14 +400,13 @@ app.post('/freelancer/connect-razorpay', authenticateToken, async (req, res) => 
     res.status(500).json({ error: 'Failed to create Razorpay account', details: err.error?.description });
   }
 });
-
-// ─── Transaction / Payment routes ──────────────────────────
 app.get('/transaction/:token/preview', (req, res) => {
   res.sendFile(__dirname + '/public/checkout.html');
 });
-
 app.get('/api/transaction/:token/preview', (req, res) => {
+  // ...same code as your old /transaction/:token/preview logic
   const { token } = req.params;
+
   const sql = `
     SELECT product.watermark_file_path, product.product_price, product.description, transaction.transactionStatus
     FROM transaction
@@ -391,9 +416,11 @@ app.get('/api/transaction/:token/preview', (req, res) => {
 
   db.query(sql, [token], (err, results) => {
     if (err) return res.status(500).json({ error: 'Server error' });
+
     if (results.length === 0) {
       return res.status(404).json({ error: 'Invalid or expired link' });
     }
+
     const data = results[0];
     res.json({
       description: data.description,
@@ -403,9 +430,9 @@ app.get('/api/transaction/:token/preview', (req, res) => {
     });
   });
 });
-
 app.post('/transaction/:token/create-order', async (req, res) => {
   const { token } = req.params;
+
   const sql = `
     SELECT product.product_price, transaction.transactionStatus, freeLancer.razorpay_account_id
     FROM transaction
@@ -427,6 +454,7 @@ app.post('/transaction/:token/create-order', async (req, res) => {
       receipt: token.substring(0, 40)
     };
 
+    // Only add split transfer if the freelancer has a connected linked account
     if (data.razorpay_account_id) {
       orderPayload.transfers = [{
         account: data.razorpay_account_id,
@@ -444,7 +472,6 @@ app.post('/transaction/:token/create-order', async (req, res) => {
     }
   });
 });
-
 app.post('/transaction/:token/verify', (req, res) => {
   const { token } = req.params;
   const { razorpay_order_id, razorpay_payment_id, razorpay_signature } = req.body;
@@ -468,9 +495,9 @@ app.post('/transaction/:token/verify', (req, res) => {
     res.json({ success: true });
   });
 });
-
 app.get('/transaction/:token/download', (req, res) => {
   const { token } = req.params;
+
   const sql = `
     SELECT product.original_file_path, transaction.transactionStatus
     FROM transaction
@@ -483,6 +510,7 @@ app.get('/transaction/:token/download', (req, res) => {
     if (results.length === 0) return res.status(404).json({ error: 'Invalid link' });
 
     const data = results[0];
+
     if (data.transactionStatus !== 'paid') {
       return res.status(403).json({ error: 'Payment required before download' });
     }
@@ -490,7 +518,6 @@ app.get('/transaction/:token/download', (req, res) => {
     res.download(__dirname + '/' + data.original_file_path);
   });
 });
-
 app.listen(port, () => {
-  console.log(`App listening on port ${port}`);
-});
+  console.log(`Example app listening on port ${port}`)
+})
