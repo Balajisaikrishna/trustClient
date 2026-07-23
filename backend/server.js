@@ -192,9 +192,19 @@ function createVideoWatermark(originalPath, outputPath) {
   return new Promise((resolve, reject) => {
     const text = 'TrustClient PREVIEW';
     const fontsize = 100;
-    
-    // Common system font path (adjust if needed for your server)
-    const fontPath = '/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf';
+
+    // Try multiple known font paths
+    const fontPaths = [
+      '/usr/share/fonts/truetype/liberation/LiberationSans-Regular.ttf',
+      '/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf',
+      '/usr/share/fonts/truetype/freefont/FreeSans.ttf'
+    ];
+    const fs = require('fs');
+    let fontPath = fontPaths.find(p => fs.existsSync(p));
+    if (!fontPath) {
+      // If none exist, use a font file placed in your project (e.g., fonts/Arial.ttf)
+      fontPath = path.join(__dirname, 'fonts', 'Arial.ttf');  // optional, see below
+    }
 
     ffmpeg(originalPath)
       .videoFilters([
@@ -204,7 +214,7 @@ function createVideoWatermark(originalPath, outputPath) {
             text,
             fontsize,
             fontcolor: 'white@0.5',
-            fontfile: fontPath,              // ← explicit font file
+            fontfile: fontPath,
             x: '(w-text_w)/2',
             y: '(h-text_h)/4'
           }
@@ -320,7 +330,7 @@ app.delete('/freelancer/products/:prod_id', authenticateToken, (req, res) => {
   const prodId = req.params.prod_id;
   const userName = req.freelancer.userName;
 
-  // 1. Fetch product to get file paths
+  // 1. Fetch product to get file paths and ownership
   db.query(
     'SELECT original_file_path, watermark_file_path FROM product WHERE prod_id = ? AND userName = ?',
     [prodId, userName],
@@ -331,12 +341,9 @@ app.delete('/freelancer/products/:prod_id', authenticateToken, (req, res) => {
       }
 
       const product = results[0];
-      const filesToDelete = [
-        product.original_file_path,
-        product.watermark_file_path
-      ].filter(Boolean); // remove null/undefined
+      const filesToDelete = [product.original_file_path, product.watermark_file_path].filter(Boolean);
 
-      // 2. Delete files from filesystem (silent fail if missing)
+      // 2. Remove files from disk (ignore errors)
       filesToDelete.forEach(filePath => {
         const fullPath = path.resolve(filePath);
         if (fs.existsSync(fullPath)) {
@@ -348,13 +355,21 @@ app.delete('/freelancer/products/:prod_id', authenticateToken, (req, res) => {
         }
       });
 
-      // 3. Delete DB record
-      db.query('DELETE FROM product WHERE prod_id = ?', [prodId], (err2) => {
+      // 3. Delete associated transactions FIRST to satisfy foreign key
+      db.query('DELETE FROM transaction WHERE prod_id = ?', [prodId], (err2) => {
         if (err2) {
-          console.error('Delete: DB delete error:', err2);
-          return res.status(500).json({ error: 'Failed to delete product' });
+          console.error('Delete: failed to remove transactions:', err2);
+          return res.status(500).json({ error: 'Failed to delete related transactions' });
         }
-        res.json({ success: true });
+
+        // 4. Now delete the product
+        db.query('DELETE FROM product WHERE prod_id = ?', [prodId], (err3) => {
+          if (err3) {
+            console.error('Delete: DB delete error:', err3);
+            return res.status(500).json({ error: 'Failed to delete product' });
+          }
+          res.json({ success: true });
+        });
       });
     }
   );
