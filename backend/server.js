@@ -241,10 +241,7 @@ app.get('/freelancer/products', authenticateToken, (req, res) => {
     res.json(results);
   });
 });
-app.post('/freelancer/products', authenticateToken, upload.single('file'), async (req, res) => {
-  console.log("Reached upload route");
-    console.log(req.file);
-    console.log(req.body);
+app.post('/freelancer/products', upload.single('file'), async (req, res) => {
   const { product_price, description } = req.body;
   const userName = req.freelancer.userName;
   const price = Number(product_price);
