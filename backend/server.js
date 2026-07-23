@@ -216,7 +216,7 @@ app.post('/freelancer/products/:prod_id/send', authenticateToken, (req, res) => 
         return res.status(500).json({ error: 'Failed to create transaction link' });
       }
 
-    const shareableLink = `http://localhost:3000/transaction/${link_token}/preview`;
+      const shareableLink = `${process.env.BACKEND_URL}/transaction/${link_token}/preview`;
       res.status(201).json({ message: 'Link created', link: shareableLink });
     });
   });
@@ -273,7 +273,7 @@ app.get('/api/transaction/:token/preview', (req, res) => {
       description: data.description,
       price: data.product_price,
       status: data.transactionStatus,
-previewUrl: `${process.env.BACKEND_URL}/${data.watermark_file_path}`
+      previewUrl: `${process.env.BACKEND_URL}/${data.watermark_file_path}`
     });
   });
 });
