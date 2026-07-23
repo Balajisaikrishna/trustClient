@@ -147,6 +147,7 @@ app.post('/freelancer/login', (req, res) => {
 //       .save(outputPath);
 //   });
 // }
+
 async function createWatermark(originalPath, outputPath) {
   const image = sharp(originalPath);
   const metadata = await image.metadata();
@@ -190,49 +191,59 @@ async function createWatermark(originalPath, outputPath) {
 }
 function createVideoWatermark(originalPath, outputPath) {
   return new Promise((resolve, reject) => {
-
+    
     ffmpeg(originalPath)
       .videoFilters([
-        {
-          filter: "scale",
-          options: "1280:-2"
-        },
-        {
-          filter: "drawtext",
-          options: {
-            text: "TrustClient PREVIEW",
-            fontsize: 50,
-            fontcolor: "white@0.5",
-            x: "(w-text_w)/2",
-            y: "(h-text_h)/2"
-          }
-        }
+        { filter: 'drawtext', options: { text, fontsize, fontcolor: 'white@0.5', x: '(w-text_w)/2', y: '(h-text_h)/4' } },
+        { filter: 'drawtext', options: { text, fontsize, fontcolor: 'white@0.5', x: '(w-text_w)/2', y: '(h-text_h)/2' } },
+        { filter: 'drawtext', options: { text, fontsize, fontcolor: 'white@0.5', x: '(w-text_w)/2', y: '3*(h-text_h)/4' } }
       ])
-      .outputOptions([
-        "-c:v",
-        "libx264",
-        "-preset",
-        "ultrafast",
-        "-crf",
-        "28",
-        "-c:a",
-        "copy"
-      ])
-      .on("start", command => {
-        console.log(command);
-      })
-      .on("stderr", line => {
-        console.log(line);
-      })
-      .on("end", () => {
-        console.log("Video watermark completed");
-        resolve();
-      })
-      .on("error", err => {
-        console.error(err);
-        reject(err);
-      })
+      .outputOptions('-c:a copy') // keep original audio untouched
+      .on('end', () => resolve())
+      .on('error', (err) => reject(err))
       .save(outputPath);
+    // ffmpeg(originalPath)
+    //   .videoFilters([
+    //     {
+    //       filter: "scale",
+    //       options: "1280:-2"
+    //     },
+    //     {
+    //       filter: "drawtext",
+    //       options: {
+    //         text: "TrustClient PREVIEW",
+    //         fontsize: 50,
+    //         fontcolor: "white@0.5",
+    //         x: "(w-text_w)/2",
+    //         y: "(h-text_h)/2"
+    //       }
+    //     }
+    //   ])
+    //   .outputOptions([
+    //     "-c:v",
+    //     "libx264",
+    //     "-preset",
+    //     "ultrafast",
+    //     "-crf",
+    //     "28",
+    //     "-c:a",
+    //     "copy"
+    //   ])
+    //   .on("start", command => {
+    //     console.log(command);
+    //   })
+    //   .on("stderr", line => {
+    //     console.log(line);
+    //   })
+    //   .on("end", () => {
+    //     console.log("Video watermark completed");
+    //     resolve();
+    //   })
+    //   .on("error", err => {
+    //     console.error(err);
+    //     reject(err);
+    //   })
+    //   .save(outputPath);
 
   });
 }
