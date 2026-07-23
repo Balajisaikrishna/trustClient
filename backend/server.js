@@ -312,6 +312,30 @@ app.post('/freelancer/products/:prod_id/send', authenticateToken, (req, res) => 
     });
   });
 });
+app.delete('/freelancer/products/:prod_id', authenticateToken, (req, res) => {
+  const prodId = req.params.prod_id;
+  const userName = req.freelancer.userName;
+
+  // First fetch the product to get file paths
+  db.query('SELECT * FROM product WHERE prod_id = ? AND userName = ?', [prodId, userName], (err, results) => {
+    if (err || results.length === 0) return res.status(404).json({ error: 'Product not found' });
+    
+    const product = results[0];
+    // Delete files from filesystem (original + watermark)
+    try {
+      fs.unlinkSync(product.original_file_path);
+      fs.unlinkSync(product.watermark_file_path);
+    } catch (e) {
+      console.log('File cleanup error:', e.message);
+    }
+
+    // Delete from DB
+    db.query('DELETE FROM product WHERE prod_id = ?', [prodId], (err2) => {
+      if (err2) return res.status(500).json({ error: 'Delete failed' });
+      res.json({ success: true });
+    });
+  });
+});
 app.post('/freelancer/connect-razorpay', authenticateToken, async (req, res) => {
   const userName = req.freelancer.userName;
   const { email, phone, legal_business_name, ifsc, account_number, beneficiary_name } = req.body;
