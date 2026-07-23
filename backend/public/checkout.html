@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+<!-- <!DOCTYPE html>
 <html>
 <head>
   <title>Pay for Project</title>
@@ -94,5 +94,193 @@
         });
     });
   </script>
+</body>
+</html> -->
+<!DOCTYPE html>
+<html>
+<head>
+<title>TrustClient | Payment</title>
+<link rel="stylesheet" href="/frontend/payment.css">
+<script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+</head>
+<body>
+
+<header class="payment-header">
+<div class="brand">
+<div class="brand-icon">T</div>
+<div class="brand-name">TrustClient</div>
+</div>
+</header>
+
+<main class="payment-container">
+
+<div class="payment-card">
+
+<div class="preview-section">
+<div id="previewContainer">
+<p>Loading preview...</p>
+</div>
+</div>
+
+<div class="payment-section">
+
+<span class="badge">Secure Payment</span>
+
+<h1 id="description">Loading...</h1>
+
+<p class="price" id="price"></p>
+
+<p class="info">
+Complete your payment securely to unlock the original project file.
+</p>
+
+<button id="payBtn">Pay Now</button>
+
+<a id="downloadBtn" href="#" style="display:none;">
+<button type="button">Download Original File</button>
+</a>
+
+</div>
+
+</div>
+
+</main>
+
+
+<script>
+const token = window.location.pathname.split('/')[2];
+
+fetch(`/api/transaction/${token}/preview`)
+.then(res=>res.json())
+.then(data=>{
+
+document.getElementById('description').innerText=data.description;
+document.getElementById('price').innerText=`₹${data.price}`;
+
+const isVideo=data.previewUrl.endsWith('.mp4');
+
+document.getElementById('previewContainer').innerHTML=isVideo
+? `<video src="${data.previewUrl}" controls></video>`
+: `<img src="${data.previewUrl}">`;
+
+if(data.status==='paid'){
+document.getElementById('payBtn').style.display='none';
+
+const downloadBtn=document.getElementById('downloadBtn');
+
+downloadBtn.href=`/transaction/${token}/download`;
+
+downloadBtn.style.display='block';
+}
+
+});
+
+
+document.getElementById('payBtn').addEventListener('click',()=>{
+
+const payBtn=document.getElementById('payBtn');
+
+payBtn.disabled=true;
+payBtn.innerText='Loading...';
+
+
+fetch(`/transaction/${token}/create-order`,{method:'POST'})
+.then(res=>res.json())
+.then(order=>{
+
+
+if(!order.orderId){
+
+alert(order.error||'Could not start payment');
+
+payBtn.disabled=false;
+payBtn.innerText='Pay Now';
+
+return;
+
+}
+
+
+const options={
+
+key:order.keyId,
+amount:order.amount,
+currency:order.currency,
+order_id:order.orderId,
+
+name:'TrustClient',
+description:'Project Payment',
+
+handler:function(response){
+
+fetch(`/transaction/${token}/verify`,{
+
+method:'POST',
+
+headers:{
+'Content-Type':'application/json'
+},
+
+body:JSON.stringify(response)
+
+})
+.then(res=>res.json())
+.then(result=>{
+
+if(result.success){
+
+payBtn.style.display='none';
+
+const downloadBtn=document.getElementById('downloadBtn');
+
+downloadBtn.href=`/transaction/${token}/download`;
+
+downloadBtn.style.display='block';
+
+}
+else{
+
+alert('Payment verification failed.');
+
+}
+
+});
+
+},
+
+modal:{
+ondismiss:function(){
+
+payBtn.disabled=false;
+payBtn.innerText='Pay Now';
+
+}
+}
+
+};
+
+
+const rzp=new Razorpay(options);
+
+rzp.open();
+
+
+})
+.catch(err=>{
+
+console.error(err);
+
+alert('Something went wrong starting payment.');
+
+payBtn.disabled=false;
+
+payBtn.innerText='Pay Now';
+
+});
+
+
+});
+</script>
+
 </body>
 </html>
