@@ -44,7 +44,6 @@ app.use(cors({
 app.use(express.static('public'));
 app.use('/uploads', express.static('uploads'));
 app.use(express.json());
-app.use(cors());
 app.get('/', (req, res) => {
   res.send('Hello World!')
 })
