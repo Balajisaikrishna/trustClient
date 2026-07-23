@@ -274,9 +274,11 @@ app.post('/freelancer/products', authenticateToken, upload.single('file'), async
       return res.status(400).json({ error: 'Unsupported file type for now' });
     }
   } catch (err) {
-    console.error('Watermark generation failed:', err);
-    return res.status(500).json({ error: 'Failed to process file' });
-  }
+  console.error('Watermark generation failed:', err);
+  // also log the stack
+  console.error(err.stack);
+  return res.status(500).json({ error: 'Failed to process file' });
+}
 
   const sql = `INSERT INTO product (userName, product_price, description, original_file_path, watermark_file_path) VALUES (?, ?, ?, ?, ?)`;
   db.query(sql, [userName, product_price, description, original_file_path, watermark_file_path], (err, result) => {
