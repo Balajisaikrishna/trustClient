@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+<!-- <!DOCTYPE html>
 <html>
 <head>
   <title>Freelancer Signup</title>
@@ -14,8 +14,118 @@
     <input type="password" id="password" placeholder="Password" required><br>
     <button type="submit">Sign Up</button>
   </form>
-  <p id="message"></p>
+  <p id="message"></p> -->
+  <!DOCTYPE html>
+<html>
+<head>
+<title>TrustClient | Signup</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<header class="topbar">
+<div class="brand">
+<div class="brand-icon">T</div>
+<div class="brand-name">TrustClient</div>
+</div>
+<div class="top-actions">
+<button class="theme-btn" id="themeToggle">☾</button>
+<a class="nav-btn" href="login.html">Already have an account? Login</a>
+</div>
+</header>
 
+<main class="auth-container">
+<div class="auth-card">
+<div class="auth-header">
+<h1>Create Account</h1>
+<p>Build trust. Share securely. Connect professionally.</p>
+</div>
+
+<form id="signupForm">
+<div class="input-box">
+<label>Username</label>
+<input type="text" id="userName" placeholder="Enter username" required>
+</div>
+
+<div class="input-box">
+<label>Full Name</label>
+<input type="text" id="name" placeholder="Enter full name" required>
+</div>
+
+<div class="input-box">
+<label>Email</label>
+<input type="email" id="emailId" placeholder="Enter email" required>
+</div>
+
+<div class="input-box">
+<label>Phone</label>
+<input type="text" id="phone" placeholder="Enter phone number">
+</div>
+
+<div class="input-box">
+<label>Password</label>
+<input type="password" id="password" placeholder="Create password" required>
+</div>
+
+<button class="primary-btn" type="submit">Create Account</button>
+</form>
+
+<p id="message"></p>
+</div>
+</main>
+
+<script>
+const themeToggle=document.getElementById("themeToggle");
+
+if(localStorage.getItem("theme")==="light"){
+document.body.classList.add("light");
+themeToggle.innerText="☀";
+}
+
+themeToggle.addEventListener("click",()=>{
+document.body.classList.toggle("light");
+
+if(document.body.classList.contains("light")){
+localStorage.setItem("theme","light");
+themeToggle.innerText="☀";
+}else{
+localStorage.setItem("theme","dark");
+themeToggle.innerText="☾";
+}
+});
+</script>
+
+<script>
+const API_URL = 'https://trustclient-production.up.railway.app';
+
+document.getElementById('signupForm').addEventListener('submit', async (e) => {
+e.preventDefault();
+
+const userName=document.getElementById('userName').value;
+const name=document.getElementById('name').value;
+const emailId=document.getElementById('emailId').value;
+const phone=document.getElementById('phone').value;
+const password=document.getElementById('password').value;
+
+const res=await fetch(`${API_URL}/freelancer/signup`,{
+method:'POST',
+headers:{'Content-Type':'application/json'},
+body:JSON.stringify({userName,name,emailId,phone,password})
+});
+
+const data=await res.json();
+
+if(res.ok){
+document.getElementById('message').innerText='Signup successful! Redirecting to login...';
+setTimeout(()=>window.location.href='login.html',1500);
+}else{
+document.getElementById('message').innerText=data.error||'Signup failed';
+}
+});
+</script>
+
+</body>
+</html>
+<!-- 
   <script>
   const API_URL = 'https://trustclient-production.up.railway.app';
     document.getElementById('signupForm').addEventListener('submit', async (e) => {
@@ -44,4 +154,4 @@
     });
   </script>
 </body>
-</html>
+</html> -->

@@ -1,903 +1,350 @@
-*{
-    margin:0;
-    padding:0;
-    box-sizing:border-box;
-    font-family:"Inter","Segoe UI",sans-serif;
-}
-
+*{margin:0;padding:0;box-sizing:border-box;font-family:Inter,"Segoe UI",sans-serif}
 :root{
-    --bg:#0b0b0f;
-    --card:#15151b;
-    --input:#1c1c23;
-    --text:#f8fafc;
-    --muted:#9ca3af;
-    --border:rgba(255,255,255,.08);
-    --accent:#6366f1;
-    --accent2:#3b82f6;
-    --button:#ffffff;
-    --buttonText:#111827;
-    --danger:#ef4444;
-    --success:#22c55e;
-    --shadow:0 25px 70px rgba(0,0,0,.45);
+--bg:#08090c;
+--card:#111318;
+--input:#171a21;
+--text:#f8fafc;
+--muted:#94a3b8;
+--border:rgba(255,255,255,.08);
+--accent:#6366f1;
+--button:#fff;
+--buttonText:#111827;
+--shadow:0 25px 70px rgba(0,0,0,.45);
+--danger:#ef4444;
 }
-
 body.light{
-    --bg:#f7f8fc;
-    --card:#ffffff;
-    --input:#ffffff;
-    --text:#111827;
-    --muted:#6b7280;
-    --border:#e5e7eb;
-    --button:#111827;
-    --buttonText:#ffffff;
-    --shadow:0 20px 50px rgba(0,0,0,.08);
+--bg:#f6f7fb;
+--card:#fff;
+--input:#fff;
+--text:#111827;
+--muted:#64748b;
+--border:#e5e7eb;
+--button:#111827;
+--buttonText:#fff;
+--shadow:0 20px 50px rgba(0,0,0,.08);
 }
-
 body{
-    min-height:100vh;
-    background:
-    radial-gradient(circle at top right,rgba(99,102,241,.15),transparent 35%),
-    radial-gradient(circle at bottom left,rgba(59,130,246,.12),transparent 35%),
-    var(--bg);
-    color:var(--text);
-    transition:.35s ease;
-    overflow-x:hidden;
-    animation:fadeIn .5s ease;
+min-height:100vh;
+background:radial-gradient(circle at top right,rgba(99,102,241,.15),transparent 35%),var(--bg);
+color:var(--text);
+transition:.35s;
 }
-
-h1,h2,h3{
-    color:var(--text);
+.topbar{
+height:80px;
+padding:0 6%;
+display:flex;
+align-items:center;
+justify-content:space-between;
 }
-
-button,
-input,
-textarea,
-a{
-    transition:.25s ease;
+.brand{
+display:flex;
+align-items:center;
+gap:12px;
 }
-
-
-/* ================= AUTH PAGES ================= */
-
-body:has(#signupForm),
-body:has(#loginForm){
-    display:flex;
-    flex-direction:column;
-    align-items:center;
-    justify-content:center;
-    padding:30px;
+.brand-icon{
+height:42px;
+width:42px;
+border-radius:13px;
+display:flex;
+align-items:center;
+justify-content:center;
+font-weight:800;
+color:white;
+background:linear-gradient(135deg,#6366f1,#3b82f6);
+box-shadow:0 10px 30px rgba(99,102,241,.35);
 }
-
-
-body:has(#signupForm) h2,
-body:has(#loginForm) h2{
-    font-size:34px;
-    font-weight:800;
-    letter-spacing:-1px;
-    margin-bottom:30px;
+.brand-name{
+font-size:25px;
+font-weight:800;
+letter-spacing:-.8px;
 }
-
-
-#signupForm,
-#loginForm{
-
-    width:100%;
-    max-width:430px;
-
-    background:var(--card);
-
-    border:1px solid var(--border);
-
-    border-radius:28px;
-
-    padding:40px;
-
-    box-shadow:var(--shadow);
-
-    display:flex;
-
-    flex-direction:column;
-
-    animation:slideUp .6s ease;
-
+.top-actions{
+display:flex;
+align-items:center;
+gap:14px;
 }
-
-
-#signupForm input,
-#loginForm input{
-
-    width:100%;
-
-    height:56px;
-
-    padding:0 18px;
-
-    margin-bottom:18px;
-
-    border-radius:16px;
-
-    border:1px solid var(--border);
-
-    background:var(--input);
-
-    color:var(--text);
-
-    outline:none;
-
-    font-size:15px;
-
+.theme-btn{
+height:44px;
+width:44px;
+border-radius:14px;
+border:1px solid var(--border);
+background:var(--card);
+color:var(--text);
+cursor:pointer;
+font-size:18px;
 }
-
-
-#signupForm input::placeholder,
-#loginForm input::placeholder{
-
-    color:var(--muted);
-
+.theme-btn:hover{
+transform:translateY(-3px);
 }
-
-
-#signupForm input:hover,
-#loginForm input:hover{
-
-    border-color:rgba(99,102,241,.5);
-
+.nav-btn{
+text-decoration:none;
+padding:12px 20px;
+border-radius:14px;
+border:1px solid var(--border);
+color:var(--text);
+font-weight:600;
+font-size:14px;
 }
-
-
-#signupForm input:focus,
-#loginForm input:focus{
-
-    border-color:var(--accent);
-
-    box-shadow:0 0 0 4px rgba(99,102,241,.15);
-
-    transform:translateY(-2px);
-
+.nav-btn:hover{
+background:var(--card);
+transform:translateY(-3px);
 }
-
-
-#signupForm button,
-#loginForm button{
-
-    width:100%;
-
-    height:58px;
-
-    margin-top:8px;
-
-    border:none;
-
-    border-radius:16px;
-
-    background:var(--button);
-
-    color:var(--buttonText);
-
-    font-size:16px;
-
-    font-weight:700;
-
-    cursor:pointer;
-
+.auth-container{
+min-height:calc(100vh - 80px);
+display:flex;
+justify-content:center;
+align-items:center;
+padding:30px;
 }
-
-
-#signupForm button:hover,
-#loginForm button:hover{
-
-    transform:translateY(-3px);
-
-    box-shadow:0 15px 35px rgba(0,0,0,.2);
-
+.auth-card{
+width:100%;
+max-width:450px;
+padding:40px;
+border-radius:28px;
+background:var(--card);
+border:1px solid var(--border);
+box-shadow:var(--shadow);
+animation:up .6s ease;
 }
-
-
-#signupForm button:active,
-#loginForm button:active{
-
-    transform:scale(.98);
-
+.auth-header{
+margin-bottom:30px;
 }
-
-
-#message{
-
-    margin-top:20px;
-
-    text-align:center;
-
-    font-size:14px;
-
-    font-weight:600;
-
-    color:var(--success);
-
-    min-height:20px;
-
+.auth-header h1{
+font-size:34px;
+font-weight:800;
+letter-spacing:-1px;
+margin-bottom:10px;
 }
-
-
-/* ================= ANIMATIONS ================= */
-
-
-@keyframes fadeIn{
-
-    from{
-        opacity:0;
-    }
-
-    to{
-        opacity:1;
-    }
-
+.auth-header p{
+color:var(--muted);
+line-height:1.6;
 }
-
-
-@keyframes slideUp{
-
-    from{
-        opacity:0;
-        transform:translateY(25px);
-    }
-
-    to{
-        opacity:1;
-        transform:translateY(0);
-    }
-
+.input-box{
+display:flex;
+flex-direction:column;
+gap:8px;
+margin-bottom:18px;
 }
-/* ================= DASHBOARD ================= */
-
-body:has(#productGrid){
-    display:block;
+.input-box label{
+font-size:14px;
+font-weight:600;
 }
-
-
-body:has(#productGrid)>h2{
-
-    font-size:38px;
-
-    font-weight:800;
-
-    letter-spacing:-1px;
-
-    margin:35px 6% 10px;
-
+.input-box input,.input-box textarea{
+width:100%;
+border-radius:15px;
+border:1px solid var(--border);
+background:var(--input);
+color:var(--text);
+padding:0 16px;
+height:54px;
+outline:none;
+font-size:15px;
 }
-
-
-body:has(#productGrid)>h2 span{
-
-    background:linear-gradient(135deg,#6366f1,#3b82f6);
-
-    -webkit-background-clip:text;
-
-    -webkit-text-fill-color:transparent;
-
+.input-box textarea{
+height:120px;
+padding:15px;
+resize:none;
 }
-
-
-#logoutBtn{
-
-    position:absolute;
-
-    top:35px;
-
-    right:6%;
-
-    height:48px;
-
-    padding:0 24px;
-
-    border:none;
-
-    border-radius:14px;
-
-    background:#ef4444;
-
-    color:white;
-
-    font-weight:700;
-
-    cursor:pointer;
-
+.input-box input:focus,.input-box textarea:focus{
+border-color:var(--accent);
+box-shadow:0 0 0 4px rgba(99,102,241,.15);
+transform:translateY(-2px);
 }
-
-
-#logoutBtn:hover{
-
-    transform:translateY(-3px);
-
-    box-shadow:0 15px 30px rgba(239,68,68,.3);
-
+.primary-btn{
+height:56px;
+width:100%;
+border:none;
+border-radius:16px;
+background:var(--button);
+color:var(--buttonText);
+font-weight:700;
+font-size:16px;
+cursor:pointer;
+margin-top:8px;
 }
-
-
-body:has(#productGrid)>h3{
-
-    margin:45px 6% 25px;
-
-    font-size:30px;
-
-    font-weight:800;
-
+.primary-btn:hover{
+transform:translateY(-3px);
+box-shadow:0 15px 35px rgba(0,0,0,.2);
 }
-
-
-#productGrid{
-
-    width:88%;
-
-    margin:auto;
-
-    display:grid;
-
-    grid-template-columns:repeat(auto-fill,minmax(280px,1fr));
-
-    gap:28px;
-
-    padding-bottom:60px;
-
+#message,#uploadMessage{
+margin-top:18px;
+text-align:center;
+color:#22c55e;
+font-weight:600;
 }
-
-
+.dashboard-container{
+width:88%;
+margin:40px auto;
+}
+.dashboard-hero{
+padding:40px;
+border-radius:30px;
+background:var(--card);
+border:1px solid var(--border);
+box-shadow:var(--shadow);
+margin-bottom:40px;
+}
+.dashboard-hero h1{
+font-size:42px;
+font-weight:800;
+letter-spacing:-1px;
+}
+.dashboard-hero span{
+color:#6366f1;
+}
+.dashboard-hero p{
+margin-top:12px;
+color:var(--muted);
+font-size:17px;
+}
+.products-area h2{
+font-size:32px;
+font-weight:800;
+margin-bottom:25px;
+}
+.product-grid{
+display:grid;
+grid-template-columns:repeat(auto-fill,minmax(280px,1fr));
+gap:25px;
+}
 .card{
-
-    background:var(--card);
-
-    border:1px solid var(--border);
-
-    border-radius:24px;
-
-    overflow:hidden;
-
-    box-shadow:var(--shadow);
-
-    padding:18px;
-
-    width:auto;
-
-    transition:.35s ease;
-
-    animation:fadeIn .5s ease;
-
+background:var(--card);
+border:1px solid var(--border);
+border-radius:24px;
+padding:18px;
+box-shadow:var(--shadow);
+transition:.3s;
 }
-
-
 .card:hover{
-
-    transform:translateY(-8px);
-
+transform:translateY(-8px);
 }
-
-
-.card img,
-.card video{
-
-    width:100%;
-
-    height:220px;
-
-    object-fit:cover;
-
-    border-radius:18px;
-
-    background:#111827;
-
+.card img,.card video{
+width:100%;
+height:220px;
+object-fit:cover;
+border-radius:18px;
 }
-
-
 .card p{
-
-    color:var(--muted);
-
-    font-size:15px;
-
-    line-height:1.6;
-
-    margin:18px 0;
-
+color:var(--muted);
+margin:18px 0;
+line-height:1.6;
 }
-
-
 .card strong{
-
-    display:block;
-
-    font-size:26px;
-
-    font-weight:800;
-
-    color:var(--text);
-
-    margin-bottom:15px;
-
+font-size:26px;
+display:block;
+margin-bottom:15px;
 }
-
-
-/* ADD PRODUCT CARD */
-
-
 .addCard{
-
-    min-height:420px;
-
-    display:flex;
-
-    align-items:center;
-
-    justify-content:center;
-
-    font-size:70px;
-
-    color:#94a3b8;
-
-    border:2px dashed var(--border);
-
-    cursor:pointer;
-
-    background:transparent;
-
+height:420px;
+display:flex;
+align-items:center;
+justify-content:center;
+font-size:70px;
+color:#94a3b8;
+border:2px dashed var(--border);
+cursor:pointer;
 }
-
-
 .addCard:hover{
-
-    border-color:var(--accent);
-
-    color:var(--accent);
-
-    background:rgba(99,102,241,.08);
-
+color:#6366f1;
+border-color:#6366f1;
 }
-
-
-/* GENERATE LINK BUTTON */
-
-
 .sendBtn{
-
-    width:100%;
-
-    height:52px;
-
-    border:none;
-
-    border-radius:14px;
-
-    background:var(--button);
-
-    color:var(--buttonText);
-
-    font-weight:700;
-
-    cursor:pointer;
-
+width:100%;
+height:50px;
+border:none;
+border-radius:14px;
+background:var(--button);
+color:var(--buttonText);
+font-weight:700;
+cursor:pointer;
 }
-
-
 .sendBtn:hover{
-
-    transform:translateY(-2px);
-
-    box-shadow:0 12px 30px rgba(0,0,0,.18);
-
+transform:translateY(-2px);
 }
-
-
-.sendBtn:disabled{
-
-    opacity:.7;
-
-    cursor:not-allowed;
-
-}
-
-
 .linkResult{
-
-    margin-top:14px;
-
-    font-size:13px;
-
-    word-break:break-all;
-
+margin-top:12px;
+font-size:13px;
+word-break:break-word;
 }
-
-
 .linkResult a{
-
-    color:#4f8cff;
-
-    text-decoration:none;
-
-    font-weight:700;
-
+color:#6366f1;
+text-decoration:none;
+font-weight:700;
 }
-
-
 .copyBtn{
-
-    padding:8px 15px;
-
-    border:none;
-
-    border-radius:10px;
-
-    background:#4f8cff;
-
-    color:white;
-
-    cursor:pointer;
-
-    font-weight:600;
-
+padding:8px 14px;
+border:none;
+border-radius:10px;
+background:#6366f1;
+color:white;
+cursor:pointer;
 }
-
-
-.copyBtn:hover{
-
-    opacity:.85;
-
+.logout-btn{
+height:44px;
+padding:0 22px;
+border:none;
+border-radius:14px;
+background:#ef4444;
+color:white;
+font-weight:700;
+cursor:pointer;
 }
-/* ================= UPLOAD MODAL ================= */
-
+.logout-btn:hover{
+transform:translateY(-3px);
+}
 #modalOverlay{
-
-    display:none;
-
-    position:fixed;
-
-    inset:0;
-
-    background:rgba(0,0,0,.55);
-
-    backdrop-filter:blur(10px);
-
-    align-items:center;
-
-    justify-content:center;
-
-    padding:20px;
-
-    z-index:1000;
-
+display:none;
+position:fixed;
+inset:0;
+background:rgba(0,0,0,.55);
+backdrop-filter:blur(10px);
+align-items:center;
+justify-content:center;
+padding:20px;
+z-index:1000;
 }
-
-
 #modalBox{
-
-    width:100%;
-
-    max-width:520px;
-
-    background:var(--card);
-
-    border:1px solid var(--border);
-
-    border-radius:28px;
-
-    padding:35px;
-
-    box-shadow:var(--shadow);
-
-    animation:slideUp .35s ease;
-
+width:100%;
+max-width:520px;
+padding:35px;
+border-radius:28px;
+background:var(--card);
+border:1px solid var(--border);
+box-shadow:var(--shadow);
 }
-
-
-#modalBox h3{
-
-    font-size:28px;
-
-    font-weight:800;
-
-    margin-bottom:25px;
-
+.modal-header h3{
+font-size:28px;
+margin-bottom:25px;
 }
-
-
-#product_price,
-#description,
-#file{
-
-    width:100%;
-
+.modal-actions{
+display:flex;
+gap:14px;
+margin-top:20px;
 }
-
-
-#product_price{
-
-    height:55px;
-
-    padding:0 16px;
-
-    border-radius:15px;
-
-    border:1px solid var(--border);
-
-    background:var(--input);
-
-    color:var(--text);
-
-    outline:none;
-
+.cancel-btn{
+flex:1;
+height:55px;
+border:none;
+border-radius:15px;
+background:#ef4444;
+color:white;
+font-weight:700;
+cursor:pointer;
 }
-
-
-#description{
-
-    height:130px;
-
-    resize:none;
-
-    padding:16px;
-
-    border-radius:16px;
-
-    border:1px solid var(--border);
-
-    background:var(--input);
-
-    color:var(--text);
-
-    outline:none;
-
+.modal-actions .primary-btn{
+flex:2;
+margin:0;
 }
-
-
-#file{
-
-    padding:14px;
-
-    border-radius:15px;
-
-    border:1px solid var(--border);
-
-    background:var(--input);
-
-    color:var(--text);
-
+@keyframes up{
+from{opacity:0;transform:translateY(25px)}
+to{opacity:1;transform:translateY(0)}
 }
-
-
-#uploadForm button{
-
-    height:54px;
-
-    padding:0 25px;
-
-    border:none;
-
-    border-radius:15px;
-
-    cursor:pointer;
-
-    font-weight:700;
-
-}
-
-
-#uploadForm button[type="submit"]{
-
-    background:var(--button);
-
-    color:var(--buttonText);
-
-}
-
-
-#closeModal{
-
-    background:#ef4444;
-
-    color:white;
-
-}
-
-
-#uploadForm button:hover{
-
-    transform:translateY(-2px);
-
-}
-
-
-#uploadMessage{
-
-    margin-top:18px;
-
-    text-align:center;
-
-    color:#22c55e;
-
-    font-weight:600;
-
-}
-
-
-/* ================= RESPONSIVE ================= */
-
-
-@media(max-width:768px){
-
-    body:has(#signupForm),
-    body:has(#loginForm){
-
-        padding:20px;
-
-    }
-
-
-    body:has(#signupForm) h2,
-    body:has(#loginForm) h2{
-
-        font-size:28px;
-
-    }
-
-
-    #signupForm,
-    #loginForm{
-
-        padding:28px;
-
-        border-radius:22px;
-
-    }
-
-
-    body:has(#productGrid)>h2{
-
-        margin:30px 5% 10px;
-
-        font-size:30px;
-
-    }
-
-
-    #logoutBtn{
-
-        top:25px;
-
-        right:5%;
-
-        padding:0 16px;
-
-    }
-
-
-    body:has(#productGrid)>h3{
-
-        margin:35px 5% 20px;
-
-        font-size:25px;
-
-    }
-
-
-    #productGrid{
-
-        width:90%;
-
-        grid-template-columns:1fr;
-
-    }
-
-
-    .card img,
-    .card video{
-
-        height:200px;
-
-    }
-
-
-    #modalBox{
-
-        padding:25px;
-
-    }
-
-}
-
-
-@media(max-width:450px){
-
-    body:has(#productGrid)>h2{
-
-        font-size:25px;
-
-    }
-
-
-    #logoutBtn{
-
-        height:42px;
-
-        font-size:13px;
-
-    }
-
-
-    #signupForm,
-    #loginForm{
-
-        padding:22px;
-
-    }
-
-
-    #signupForm input,
-    #loginForm input{
-
-        height:52px;
-
-    }
-
-
-    .card{
-
-        border-radius:20px;
-
-    }
-
-}
-
-
-/* ================= SCROLLBAR ================= */
-
-
-::-webkit-scrollbar{
-
-    width:9px;
-
-}
-
-
-::-webkit-scrollbar-thumb{
-
-    background:#64748b;
-
-    border-radius:20px;
-
-}
-
-
-/* ================= GLOBAL MICRO INTERACTIONS ================= */
-
-
-button:active{
-
-    transform:scale(.97);
-
-}
-
-
-input,
-textarea{
-
-    transition:.25s ease;
-
-}
-
-
-input:focus,
-textarea:focus{
-
-    border-color:#6366f1;
-
-    box-shadow:0 0 0 4px rgba(99,102,241,.12);
-
-}
-
-
-/* ================= PAGE LOAD ================= */
-
-
-body{
-
-    animation:fadeIn .45s ease;
-
+@media(max-width:700px){
+.topbar{padding:0 20px}
+.nav-btn{font-size:12px;padding:10px 12px}
+.auth-card{padding:28px}
+.dashboard-container{width:92%}
+.dashboard-hero{padding:25px}
+.dashboard-hero h1{font-size:30px}
+.product-grid{grid-template-columns:1fr}
 }

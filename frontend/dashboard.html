@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+<!-- <!DOCTYPE html>
 <html>
 <head>
   <title>Dashboard</title>
@@ -164,4 +164,383 @@
     loadProducts(); 
   </script>
 </body>
-</html> 
+</html>  -->
+<!DOCTYPE html>
+<html>
+<head>
+<title>TrustClient | Dashboard</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<header class="topbar dashboard-bar">
+
+<div class="brand">
+<div class="brand-icon">T</div>
+<div class="brand-name">TrustClient</div>
+</div>
+
+<div class="top-actions">
+<button class="theme-btn" id="themeToggle">☾</button>
+<button id="logoutBtn" class="logout-btn">Logout</button>
+</div>
+
+</header>
+
+
+<main class="dashboard-container">
+
+<section class="dashboard-hero">
+
+<div>
+<h1>Welcome, <span id="welcomeName"></span></h1>
+<p>Manage your products and securely share them with clients.</p>
+</div>
+
+</section>
+
+
+<section class="products-area">
+
+<div class="section-title">
+<h2>My Products</h2>
+</div>
+
+<div id="productGrid" class="product-grid"></div>
+
+</section>
+
+</main>
+
+
+<div id="modalOverlay">
+
+<div id="modalBox">
+
+<div class="modal-header">
+<h3>Upload New Product</h3>
+</div>
+
+
+<form id="uploadForm">
+
+<div class="input-box">
+<label>Price</label>
+<input type="number" id="product_price" placeholder="Price (INR)" required>
+</div>
+
+
+<div class="input-box">
+<label>Description</label>
+<textarea id="description" placeholder="Description" required></textarea>
+</div>
+
+
+<div class="input-box">
+<label>File</label>
+<input type="file" id="file" required>
+</div>
+
+
+<div class="modal-actions">
+
+<button type="submit" class="primary-btn">
+Upload
+</button>
+
+<button type="button" id="closeModal" class="cancel-btn">
+Cancel
+</button>
+
+</div>
+
+
+</form>
+
+<p id="uploadMessage"></p>
+
+
+</div>
+
+</div>
+
+
+<script>
+const themeToggle=document.getElementById("themeToggle");
+
+if(localStorage.getItem("theme")==="light"){
+document.body.classList.add("light");
+themeToggle.innerText="☀";
+}
+
+themeToggle.addEventListener("click",()=>{
+document.body.classList.toggle("light");
+
+if(document.body.classList.contains("light")){
+localStorage.setItem("theme","light");
+themeToggle.innerText="☀";
+}else{
+localStorage.setItem("theme","dark");
+themeToggle.innerText="☾";
+}
+});
+</script>
+
+
+<script>
+
+const API_URL='https://trustclient-production.up.railway.app';
+
+const token=localStorage.getItem('token');
+const userName=localStorage.getItem('userName');
+
+if(!token) window.location.href='login.html';
+
+document.getElementById('welcomeName').innerText=userName;
+
+
+document.getElementById('logoutBtn').addEventListener('click',()=>{
+localStorage.removeItem('token');
+localStorage.removeItem('userName');
+window.location.href='login.html';
+});
+
+
+async function loadProducts(){
+
+const res=await fetch(`${API_URL}/freelancer/products`,{
+headers:{
+'Authorization':'Bearer '+token
+}
+});
+
+const products=await res.json();
+
+const grid=document.getElementById('productGrid');
+
+grid.innerHTML='';
+
+
+const addCard=document.createElement('div');
+
+addCard.className='card addCard';
+
+addCard.innerText='+';
+
+addCard.addEventListener('click',()=>{
+document.getElementById('modalOverlay').style.display='flex';
+});
+
+grid.appendChild(addCard);
+
+
+
+products.forEach(p=>{
+
+const card=document.createElement('div');
+
+card.className='card';
+
+
+const previewUrl=`${API_URL}/${p.watermark_file_path}`;
+
+const isVideo=p.watermark_file_path.endsWith('.mp4');
+
+
+card.innerHTML=`
+
+${isVideo?
+`<video src="${previewUrl}" controls></video>`:
+`<img src="${previewUrl}">`
+}
+
+<p>${p.description}</p>
+
+<strong>₹${p.product_price}</strong>
+
+<button class="sendBtn" data-id="${p.prod_id}">
+Generate Link
+</button>
+
+<p class="linkResult"></p>
+
+`;
+
+
+grid.appendChild(card);
+
+});
+
+}
+
+
+
+document.getElementById('closeModal').addEventListener('click',()=>{
+
+document.getElementById('modalOverlay').style.display='none';
+
+});
+
+
+
+document.getElementById('uploadForm').addEventListener('submit',async(e)=>{
+
+e.preventDefault();
+
+
+const submitBtn=e.target.querySelector('button[type="submit"]');
+
+submitBtn.disabled=true;
+
+submitBtn.innerText='Uploading...';
+
+
+
+const formData=new FormData();
+
+formData.append('product_price',
+document.getElementById('product_price').value);
+
+formData.append('description',
+document.getElementById('description').value);
+
+formData.append('file',
+document.getElementById('file').files[0]);
+
+
+
+try{
+
+const res=await fetch(`${API_URL}/freelancer/products`,{
+
+method:'POST',
+
+headers:{
+'Authorization':'Bearer '+token
+},
+
+body:formData
+
+});
+
+
+const data=await res.json();
+
+
+if(res.ok){
+
+document.getElementById('uploadMessage').innerText='Uploaded successfully!';
+
+document.getElementById('uploadForm').reset();
+
+await loadProducts();
+
+
+setTimeout(()=>{
+
+document.getElementById('modalOverlay').style.display='none';
+
+document.getElementById('uploadMessage').innerText='';
+
+},1000);
+
+
+}else{
+
+document.getElementById('uploadMessage').innerText=data.error||'Upload failed';
+
+}
+
+
+}catch(err){
+
+document.getElementById('uploadMessage').innerText='Something went wrong.';
+
+}
+
+
+finally{
+
+submitBtn.disabled=false;
+
+submitBtn.innerText='Upload';
+
+}
+
+
+});
+
+
+
+document.getElementById('productGrid').addEventListener('click',async(e)=>{
+
+
+if(e.target.classList.contains('sendBtn')){
+
+
+const prodId=e.target.dataset.id;
+
+
+e.target.disabled=true;
+
+e.target.innerText='Generating...';
+
+
+
+const res=await fetch(`${API_URL}/freelancer/products/${prodId}/send`,{
+
+method:'POST',
+
+headers:{
+'Authorization':'Bearer '+token
+}
+
+});
+
+
+const data=await res.json();
+
+
+const resultP=e.target.nextElementSibling;
+
+
+if(res.ok){
+
+resultP.innerHTML=
+
+`<a href="${data.link}" target="_blank">Open Link</a>
+<button type="button" class="copyBtn">Copy</button>`;
+
+
+resultP.querySelector('.copyBtn').addEventListener('click',()=>{
+
+navigator.clipboard.writeText(data.link);
+
+alert('Link copied!');
+
+});
+
+
+}else{
+
+resultP.innerText=data.error||'Failed to generate link';
+
+}
+
+
+e.target.disabled=false;
+
+e.target.innerText='Generate Link';
+
+
+}
+
+});
+
+
+loadProducts();
+
+</script>
+
+</body>
+</html>
