@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+<!-- <!DOCTYPE html>
 <html>
 <head>
   <title>Pay for Project</title>
@@ -94,5 +94,317 @@
         });
     });
   </script>
+</body>
+</html> -->
+<body>
+
+<header class="dashboard-header">
+
+<div class="logo">
+
+<div class="logo-icon">
+TC
+</div>
+
+<div class="logo-text">
+<span>Trust</span>Client
+</div>
+
+</div>
+
+<div class="header-actions">
+
+<button id="themeToggle" class="theme-btn">
+🌙
+</button>
+
+</div>
+
+</header>
+
+<main class="payment-page">
+
+<div class="payment-card">
+
+<div class="preview-box">
+
+<div id="previewContainer" class="previewContainer">
+
+<div class="loading-preview">
+
+Loading Preview...
+
+</div>
+
+</div>
+
+</div>
+
+<div class="payment-details">
+
+<span class="badge">
+
+Secure Purchase
+
+</span>
+
+<h1 id="description">
+
+Loading...
+
+</h1>
+
+<p class="payment-text">
+
+Purchase this premium digital product securely through TrustClient.
+Once payment is successful you'll instantly receive access to the original file.
+
+</p>
+
+<div class="price-box">
+
+<span>
+
+Price
+
+</span>
+
+<h2 id="price">
+
+₹0
+
+</h2>
+
+</div>
+
+<div class="payment-buttons">
+
+<button id="payBtn" class="submit-btn">
+
+Pay Securely
+
+</button>
+
+<a
+id="downloadBtn"
+href="#"
+style="display:none;"
+class="download-link">
+
+<button
+type="button"
+class="download-btn">
+
+Download Original
+
+</button>
+
+</a>
+
+</div>
+
+<div class="secure-note">
+
+🔒 Protected by Razorpay Secure Payments
+
+</div>
+
+</div>
+
+</div>
+
+</main>
+<script>
+
+const token=window.location.pathname.split('/')[2];
+
+const themeBtn=document.getElementById("themeToggle");
+
+if(localStorage.getItem("theme")==="light"){
+
+document.body.classList.add("light");
+
+themeBtn.innerHTML="☀️";
+
+}
+
+themeBtn.onclick=()=>{
+
+document.body.classList.toggle("light");
+
+if(document.body.classList.contains("light")){
+
+localStorage.setItem("theme","light");
+
+themeBtn.innerHTML="☀️";
+
+}else{
+
+localStorage.setItem("theme","dark");
+
+themeBtn.innerHTML="🌙";
+
+}
+
+};
+
+fetch(`/api/transaction/${token}/preview`)
+.then(res=>res.json())
+.then(data=>{
+
+document.getElementById("description").innerText=data.description;
+
+document.getElementById("price").innerText=`₹${data.price}`;
+
+const isVideo=data.previewUrl.endsWith(".mp4");
+
+document.getElementById("previewContainer").innerHTML=
+
+isVideo
+
+?
+
+`<video src="${data.previewUrl}" controls></video>`
+
+:
+
+`<img src="${data.previewUrl}">`;
+
+if(data.status==="paid"){
+
+document.getElementById("payBtn").style.display="none";
+
+const btn=document.getElementById("downloadBtn");
+
+btn.href=`/transaction/${token}/download`;
+
+btn.style.display="inline-block";
+
+}
+
+});
+
+document.getElementById("payBtn").addEventListener("click",()=>{
+
+const payBtn=document.getElementById("payBtn");
+
+payBtn.disabled=true;
+
+payBtn.innerText="Opening Razorpay...";
+
+fetch(`/transaction/${token}/create-order`,{
+
+method:"POST"
+
+})
+
+.then(res=>res.json())
+
+.then(order=>{
+
+if(!order.orderId){
+
+alert(order.error||"Unable to start payment.");
+
+payBtn.disabled=false;
+
+payBtn.innerText="Pay Securely";
+
+return;
+
+}
+
+const options={
+
+key:order.keyId,
+
+amount:order.amount,
+
+currency:order.currency,
+
+order_id:order.orderId,
+
+name:"TrustClient",
+
+description:"Digital Product Purchase",
+
+handler:function(response){
+
+fetch(`/transaction/${token}/verify`,{
+
+method:"POST",
+
+headers:{
+
+'Content-Type':'application/json'
+
+},
+
+body:JSON.stringify(response)
+
+})
+
+.then(res=>res.json())
+
+.then(result=>{
+
+if(result.success){
+
+payBtn.style.display="none";
+
+const btn=document.getElementById("downloadBtn");
+
+btn.href=`/transaction/${token}/download`;
+
+btn.style.display="inline-block";
+
+}else{
+
+alert("Payment verification failed.");
+
+payBtn.disabled=false;
+
+payBtn.innerText="Pay Securely";
+
+}
+
+});
+
+},
+
+modal:{
+
+ondismiss:function(){
+
+payBtn.disabled=false;
+
+payBtn.innerText="Pay Securely";
+
+}
+
+}
+
+};
+
+const rzp=new Razorpay(options);
+
+rzp.open();
+
+})
+
+.catch(()=>{
+
+alert("Something went wrong.");
+
+payBtn.disabled=false;
+
+payBtn.innerText="Pay Securely";
+
+});
+
+});
+
+</script>
+
 </body>
 </html>
