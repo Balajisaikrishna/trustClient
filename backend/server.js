@@ -29,12 +29,12 @@ const app = express();
 const port = 3000;
 
 app.use(cors({
-  origin: 'https://trustclient.vercel.app'
+  origin: "https://trust-client-rose.vercel.app"
 }));
 app.use(express.static('public'));
 app.use('/uploads', express.static('uploads'));
 app.use(express.json());
-// app.use(cors());
+app.use(cors());
 app.get('/', (req, res) => {
   res.send('Hello World!')
 })
