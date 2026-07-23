@@ -417,3 +417,167 @@ to{opacity:1;transform:translateY(0)}
   background: rgba(99, 102, 241, 0.05);
   transform: translateY(-2px);
 }
+/* ── Preview thumbnail (card) ── */
+.preview-thumbnail {
+  cursor: pointer;
+  position: relative;
+  overflow: hidden;
+  border-radius: 18px;
+  line-height: 0;
+}
+.preview-thumbnail img,
+.preview-thumbnail video {
+  width: 100%;
+  height: 220px;
+  object-fit: cover;
+  transition: transform 0.3s ease;
+}
+.preview-thumbnail:hover img,
+.preview-thumbnail:hover video {
+  transform: scale(1.04);
+}
+.preview-thumbnail:hover::after {
+  content: "⛶";  /* expand icon */
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  background: rgba(0,0,0,0.5);
+  backdrop-filter: blur(6px);
+  color: white;
+  font-size: 18px;
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 10px;
+  opacity: 0.9;
+  pointer-events: none;
+  z-index: 5;
+}
+
+/* ── Glass overlay (same as payment page) ── */
+.glass-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.7);
+  backdrop-filter: blur(32px);
+  -webkit-backdrop-filter: blur(32px);
+  z-index: 10000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.38s cubic-bezier(0.22, 0.61, 0.36, 1);
+}
+.glass-overlay.active {
+  opacity: 1;
+  pointer-events: auto;
+}
+.glass-overlay::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(ellipse at center, transparent 40%, rgba(0,0,0,0.45) 100%);
+  pointer-events: none;
+  z-index: 0;
+}
+.glass-content {
+  position: relative;
+  z-index: 1;
+  max-width: 88vw;
+  max-height: 88vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transform: scale(0.88);
+  transition: transform 0.42s cubic-bezier(0.22, 0.61, 0.36, 1);
+}
+.glass-overlay.active .glass-content {
+  transform: scale(1);
+}
+.glass-content img,
+.glass-content video {
+  max-width: 85vw;
+  max-height: 85vh;
+  object-fit: contain;
+  border-radius: 20px;
+  box-shadow: 0 30px 90px rgba(0,0,0,0.55), 0 0 0 1px rgba(255,255,255,0.08);
+  display: block;
+}
+.glass-close {
+  position: absolute;
+  top: 28px;
+  right: 28px;
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.07);
+  border: 1px solid rgba(255,255,255,0.2);
+  color: #fff;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.28s ease;
+  z-index: 2;
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
+.glass-close:hover {
+  background: rgba(255,255,255,0.16);
+  border-color: rgba(255,255,255,0.35);
+  transform: rotate(90deg) scale(1.06);
+  box-shadow: 0 8px 25px rgba(0,0,0,0.4);
+}
+.glass-close svg {
+  width: 18px;
+  height: 18px;
+  pointer-events: none;
+}
+
+/* ── File input label update ── */
+.file-input-wrapper {
+  position: relative;
+}
+.file-input-wrapper input[type="file"] {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  cursor: pointer;
+  z-index: 2;
+}
+.file-input-label {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 54px;
+  background: var(--input);
+  border: 2px dashed var(--border);
+  border-radius: 15px;
+  color: var(--muted);
+  font-weight: 600;
+  font-size: 14px;
+  transition: all 0.25s ease;
+  pointer-events: none;
+  text-overflow: ellipsis;
+  overflow: hidden;
+  white-space: nowrap;
+  padding: 0 16px;
+}
+.file-input-label.file-selected {
+  border-color: #22c55e;
+  color: #22c55e;
+  background: rgba(34, 197, 94, 0.05);
+}
+.file-input-label.file-selected::before {
+  content: "✓ ";
+  font-weight: 700;
+}
+.file-input-wrapper input[type="file"]:hover + .file-input-label,
+.file-input-wrapper input[type="file"]:focus + .file-input-label {
+  border-color: var(--accent);
+  color: var(--accent);
+  background: rgba(99,102,241,0.05);
+}

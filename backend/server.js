@@ -12,6 +12,9 @@ const Razorpay = require('razorpay');
 const cors = require('cors');
 const fs = require('fs');
 const uploadDirs = ['uploads/original', 'uploads/preview'];
+const ffmpeg = require('fluent-ffmpeg');
+const ffmpegPath = require('@ffmpeg-installer/ffmpeg').path;
+ffmpeg.setFfmpegPath(ffmpegPath);
 uploadDirs.forEach(dir => {
   if (!fs.existsSync(dir)) {
     fs.mkdirSync(dir, { recursive: true });
@@ -318,25 +321,44 @@ app.delete('/freelancer/products/:prod_id', authenticateToken, (req, res) => {
   const prodId = req.params.prod_id;
   const userName = req.freelancer.userName;
 
-  // First fetch the product to get file paths
-  db.query('SELECT * FROM product WHERE prod_id = ? AND userName = ?', [prodId, userName], (err, results) => {
-    if (err || results.length === 0) return res.status(404).json({ error: 'Product not found' });
-    
-    const product = results[0];
-    // Delete files from filesystem (original + watermark)
-    try {
-      fs.unlinkSync(product.original_file_path);
-      fs.unlinkSync(product.watermark_file_path);
-    } catch (e) {
-      console.log('File cleanup error:', e.message);
-    }
+  // 1. Fetch product to get file paths
+  db.query(
+    'SELECT original_file_path, watermark_file_path FROM product WHERE prod_id = ? AND userName = ?',
+    [prodId, userName],
+    (err, results) => {
+      if (err || results.length === 0) {
+        console.error('Delete: product not found or DB error', err);
+        return res.status(404).json({ error: 'Product not found' });
+      }
 
-    // Delete from DB
-    db.query('DELETE FROM product WHERE prod_id = ?', [prodId], (err2) => {
-      if (err2) return res.status(500).json({ error: 'Delete failed' });
-      res.json({ success: true });
-    });
-  });
+      const product = results[0];
+      const filesToDelete = [
+        product.original_file_path,
+        product.watermark_file_path
+      ].filter(Boolean); // remove null/undefined
+
+      // 2. Delete files from filesystem (silent fail if missing)
+      filesToDelete.forEach(filePath => {
+        const fullPath = path.resolve(filePath);
+        if (fs.existsSync(fullPath)) {
+          try {
+            fs.unlinkSync(fullPath);
+          } catch (e) {
+            console.error(`Failed to delete file ${fullPath}:`, e.message);
+          }
+        }
+      });
+
+      // 3. Delete DB record
+      db.query('DELETE FROM product WHERE prod_id = ?', [prodId], (err2) => {
+        if (err2) {
+          console.error('Delete: DB delete error:', err2);
+          return res.status(500).json({ error: 'Failed to delete product' });
+        }
+        res.json({ success: true });
+      });
+    }
+  );
 });
 app.post('/freelancer/connect-razorpay', authenticateToken, async (req, res) => {
   const userName = req.freelancer.userName;

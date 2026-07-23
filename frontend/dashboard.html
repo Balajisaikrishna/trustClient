@@ -615,7 +615,7 @@ loadProducts();
 </div>
 
 <script>
-  // Theme toggle
+  // ── theme toggle ──
   const themeToggle = document.getElementById("themeToggle");
   if (localStorage.getItem("theme") === "light") {
     document.body.classList.add("light");
@@ -631,31 +631,89 @@ loadProducts();
       themeToggle.innerText = "☾";
     }
   });
-</script>
 
-<script>
+  // ── constants ──
   const API_URL = 'https://trustclient-production.up.railway.app';
   const token = localStorage.getItem('token');
   const userName = localStorage.getItem('userName');
-
   if (!token) window.location.href = 'login.html';
   document.getElementById('welcomeName').innerText = userName;
 
-  document.getElementById('logoutBtn').addEventListener('click', () => {
-    localStorage.removeItem('token');
-    localStorage.removeItem('userName');
-    window.location.href = 'login.html';
-  });
+  // ── file input label update ──
+  const fileInput = document.getElementById('file');
+  const fileLabel = document.querySelector('.file-input-label');
+  fileInput.addEventListener('change', function() {
+  if (this.files && this.files.length > 0) {
+    fileLabel.textContent = this.files[0].name;
+    fileLabel.classList.add('file-selected');   // <-- add this
+  } else {
+    fileLabel.textContent = 'Choose file';
+    fileLabel.classList.remove('file-selected'); // <-- and this
+  }
+});
 
+  // ── fullscreen overlay for card previews ──
+  // Add overlay dynamically to body (or it can exist in HTML; we'll create it in JS)
+  let glassOverlay, glassContent, glassClose;
+  function ensureOverlay() {
+    if (!document.getElementById('glassOverlay')) {
+      const overlay = document.createElement('div');
+      overlay.id = 'glassOverlay';
+      overlay.className = 'glass-overlay';
+      overlay.innerHTML = `
+        <button class="glass-close" id="glassClose" title="Close preview">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round">
+            <line x1="18" y1="6" x2="6" y2="18"></line>
+            <line x1="6" y1="6" x2="18" y2="18"></line>
+          </svg>
+        </button>
+        <div class="glass-content" id="glassContent"></div>
+      `;
+      document.body.appendChild(overlay);
+    }
+    glassOverlay = document.getElementById('glassOverlay');
+    glassContent = document.getElementById('glassContent');
+    glassClose = document.getElementById('glassClose');
+
+    // close events
+    glassClose.addEventListener('click', closeGlass);
+    glassOverlay.addEventListener('click', function(e) {
+      if (e.target === glassOverlay) closeGlass();
+    });
+    document.addEventListener('keydown', function(e) {
+      if (e.key === 'Escape' && glassOverlay.classList.contains('active')) {
+        closeGlass();
+      }
+    });
+  }
+  function closeGlass() {
+    glassOverlay.classList.remove('active');
+    document.body.style.overflow = '';
+    glassContent.innerHTML = '';
+  }
+  function openGlass(src, isVideo) {
+    ensureOverlay();
+    glassContent.innerHTML = isVideo
+      ? `<video src="${src}" controls autoplay playsinline></video>`
+      : `<img src="${src}" alt="Fullscreen preview">`;
+    glassOverlay.classList.add('active');
+    document.body.style.overflow = 'hidden';
+  }
+
+  // ── load products ──
   async function loadProducts() {
     const res = await fetch(`${API_URL}/freelancer/products`, {
       headers: { 'Authorization': 'Bearer ' + token }
     });
+    if (!res.ok) {
+      console.error('Failed to load products');
+      return;
+    }
     const products = await res.json();
     const grid = document.getElementById('productGrid');
     grid.innerHTML = '';
 
-    // Add new product card
+    // Add card
     const addCard = document.createElement('div');
     addCard.className = 'card addCard';
     addCard.innerText = '+';
@@ -672,10 +730,11 @@ loadProducts();
       const isVideo = p.watermark_file_path.endsWith('.mp4');
 
       card.innerHTML = `
-        ${isVideo
-          ? `<video src="${previewUrl}" controls></video>`
-          : `<img src="${previewUrl}">`
-        }
+        <div class="preview-thumbnail" data-preview="${previewUrl}" data-video="${isVideo}">
+          ${isVideo
+            ? `<video src="${previewUrl}" muted preload="metadata"></video>`
+            : `<img src="${previewUrl}" alt="Preview">`}
+        </div>
         <p>${p.description}</p>
         <strong>₹${p.product_price}</strong>
         <button class="sendBtn" data-id="${p.prod_id}">Generate Link</button>
@@ -684,9 +743,20 @@ loadProducts();
       `;
       grid.appendChild(card);
     });
+
+    // Attach click event for fullscreen on thumbnails
+    document.querySelectorAll('.preview-thumbnail').forEach(thumb => {
+      thumb.addEventListener('click', function(e) {
+        // Don't open fullscreen if the click came from a video's controls
+        if (e.target.tagName === 'VIDEO' && e.target.controls) return;
+        const src = this.dataset.preview;
+        const isVideo = this.dataset.video === 'true';
+        openGlass(src, isVideo);
+      });
+    });
   }
 
-  // Delete product handler
+  // ── delete handler ──
   document.getElementById('productGrid').addEventListener('click', async (e) => {
     if (e.target.classList.contains('deleteBtn')) {
       const prodId = e.target.dataset.id;
@@ -702,7 +772,7 @@ loadProducts();
           headers: { 'Authorization': 'Bearer ' + token }
         });
         if (res.ok) {
-          await loadProducts(); // refresh grid
+          await loadProducts();
         } else {
           const data = await res.json();
           alert(data.error || 'Delete failed');
@@ -717,12 +787,14 @@ loadProducts();
     }
   });
 
-  // Close modal
+  // ── close modal ──
   document.getElementById('closeModal').addEventListener('click', () => {
     document.getElementById('modalOverlay').style.display = 'none';
+    // reset file label
+    fileLabel.textContent = 'Choose file';
   });
 
-  // Upload form submission
+  // ── upload form ──
   document.getElementById('uploadForm').addEventListener('submit', async (e) => {
     e.preventDefault();
     const submitBtn = e.target.querySelector('button[type="submit"]');
@@ -745,6 +817,7 @@ loadProducts();
       if (res.ok) {
         document.getElementById('uploadMessage').innerText = 'Uploaded successfully!';
         document.getElementById('uploadForm').reset();
+        fileLabel.textContent = 'Choose file';
         await loadProducts();
         setTimeout(() => {
           document.getElementById('modalOverlay').style.display = 'none';
@@ -761,7 +834,7 @@ loadProducts();
     }
   });
 
-  // Generate link
+  // ── generate link ──
   document.getElementById('productGrid').addEventListener('click', async (e) => {
     if (e.target.classList.contains('sendBtn')) {
       const prodId = e.target.dataset.id;
@@ -792,6 +865,7 @@ loadProducts();
     }
   });
 
+  // initial load
   loadProducts();
 </script>
 </body>
