@@ -14,6 +14,7 @@ const fs = require('fs');
 const uploadDirs = ['uploads/original', 'uploads/preview'];
 const ffmpegPath = require('@ffmpeg-installer/ffmpeg').path;
 ffmpeg.setFfmpegPath(ffmpegPath);
+
 uploadDirs.forEach(dir => {
   if (!fs.existsSync(dir)) {
     fs.mkdirSync(dir, { recursive: true });
@@ -207,45 +208,29 @@ function createVideoWatermark(originalPath, outputPath) {
     }
 
     ffmpeg(originalPath)
-      .videoFilters([
-        {
-          filter: 'drawtext',
-          options: {
-            text,
-            fontsize,
-            fontcolor: 'white@0.5',
-            fontfile: fontPath,
-            x: '(w-text_w)/2',
-            y: '(h-text_h)/4'
-          }
-        },
-        {
-          filter: 'drawtext',
-          options: {
-            text,
-            fontsize,
-            fontcolor: 'white@0.5',
-            fontfile: fontPath,
-            x: '(w-text_w)/2',
-            y: '(h-text_h)/2'
-          }
-        },
-        {
-          filter: 'drawtext',
-          options: {
-            text,
-            fontsize,
-            fontcolor: 'white@0.5',
-            fontfile: fontPath,
-            x: '(w-text_w)/2',
-            y: '3*(h-text_h)/4'
-          }
-        }
-      ])
-      .outputOptions('-c:a copy')
-      .on('end', () => resolve())
-      .on('error', (err) => reject(err))
-      .save(outputPath);
+  .videoFilters([
+    {
+      filter: "scale",
+      options: "1280:-2"
+    },
+    {
+      filter: "drawtext",
+      options: {
+        text: "TrustClient PREVIEW",
+        fontsize: 50,
+        fontcolor: "white@0.5",
+        x: "(w-text_w)/2",
+        y: "(h-text_h)/2"
+      }
+    }
+  ])
+  .outputOptions([
+    "-c:v libx264",
+    "-preset ultrafast",
+    "-crf 28",
+    "-c:a copy"
+  ])
+  .save(outputPath);
   });
 }
 app.get('/freelancer/products', authenticateToken, (req, res) => {
