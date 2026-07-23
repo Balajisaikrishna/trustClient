@@ -36,7 +36,7 @@ const app = express();
 const port = 3000;
 
 app.use(cors({
-  origin: "https://trust-client-ap4iyq53b-balajisaikrishnas-projects.vercel.app"
+  origin: "https://trust-client-rose.vercel.app"
 }));
 app.use(express.static('public'));
 app.use('/uploads', express.static('uploads'));
