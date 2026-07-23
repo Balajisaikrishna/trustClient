@@ -190,46 +190,50 @@ async function createWatermark(originalPath, outputPath) {
 }
 function createVideoWatermark(originalPath, outputPath) {
   return new Promise((resolve, reject) => {
-    const text = 'TrustClient PREVIEW';
-    const fontsize = 100;
-
-    // Try multiple known font paths
-    const fontPaths = [
-      '/usr/share/fonts/truetype/liberation/LiberationSans-Regular.ttf',
-      '/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf',
-      '/usr/share/fonts/truetype/freefont/FreeSans.ttf'
-    ];
-    const fs = require('fs');
-    let fontPath = fontPaths.find(p => fs.existsSync(p));
-    if (!fontPath) {
-      // If none exist, use a font file placed in your project (e.g., fonts/Arial.ttf)
-      fontPath = path.join(__dirname, 'fonts', 'Arial.ttf');  // optional, see below
-    }
 
     ffmpeg(originalPath)
-  .videoFilters([
-    {
-      filter: "scale",
-      options: "1280:-2"
-    },
-    {
-      filter: "drawtext",
-      options: {
-        text: "TrustClient PREVIEW",
-        fontsize: 50,
-        fontcolor: "white@0.5",
-        x: "(w-text_w)/2",
-        y: "(h-text_h)/2"
-      }
-    }
-  ])
-  .outputOptions([
-    "-c:v libx264",
-    "-preset ultrafast",
-    "-crf 28",
-    "-c:a copy"
-  ])
-  .save(outputPath);
+      .videoFilters([
+        {
+          filter: "scale",
+          options: "1280:-2"
+        },
+        {
+          filter: "drawtext",
+          options: {
+            text: "TrustClient PREVIEW",
+            fontsize: 50,
+            fontcolor: "white@0.5",
+            x: "(w-text_w)/2",
+            y: "(h-text_h)/2"
+          }
+        }
+      ])
+      .outputOptions([
+        "-c:v",
+        "libx264",
+        "-preset",
+        "ultrafast",
+        "-crf",
+        "28",
+        "-c:a",
+        "copy"
+      ])
+      .on("start", command => {
+        console.log(command);
+      })
+      .on("stderr", line => {
+        console.log(line);
+      })
+      .on("end", () => {
+        console.log("Video watermark completed");
+        resolve();
+      })
+      .on("error", err => {
+        console.error(err);
+        reject(err);
+      })
+      .save(outputPath);
+
   });
 }
 app.get('/freelancer/products', authenticateToken, (req, res) => {
