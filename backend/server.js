@@ -12,7 +12,6 @@ const Razorpay = require('razorpay');
 const cors = require('cors');
 const fs = require('fs');
 const uploadDirs = ['uploads/original', 'uploads/preview'];
-const ffmpeg = require('fluent-ffmpeg');
 const ffmpegPath = require('@ffmpeg-installer/ffmpeg').path;
 ffmpeg.setFfmpegPath(ffmpegPath);
 uploadDirs.forEach(dir => {
