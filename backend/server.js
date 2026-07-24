@@ -124,7 +124,7 @@ async function createWatermark(originalPath, outputPath) {
         <text x="${x}" y="${y}" 
               font-size="${fontSize}" 
               fill="rgba(255,255,255,0.4)" 
-              font-family="Arial, sans-serif"
+              font-family="DejaVu Sans, sans-serif"
               text-anchor="middle" 
               transform="rotate(-30 ${x} ${y})">${text}</text>`;
     }
@@ -170,7 +170,7 @@ function createVideoWatermark(originalPath, outputPath) {
             <text x="${x}" y="${y}" 
                   font-size="${fontSize}" 
                   fill="rgba(255,255,255,0.4)" 
-                  font-family="Arial, sans-serif"
+                  font-family="DejaVu Sans, sans-serif"
                   text-anchor="middle" 
                   transform="rotate(-30 ${x} ${y})">${text}</text>`;
         }
