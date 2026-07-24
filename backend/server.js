@@ -11,9 +11,10 @@ const crypto = require('crypto');
 const Razorpay = require('razorpay');
 const cors = require('cors');
 const fs = require('fs');
+
+// Self-contained ffmpeg/ffprobe binaries — no system install needed
 const ffmpegPath = require('@ffmpeg-installer/ffmpeg').path;
 const ffprobePath = require('@ffprobe-installer/ffprobe').path;
-
 ffmpeg.setFfmpegPath(ffmpegPath);
 ffmpeg.setFfprobePath(ffprobePath);
 
@@ -24,10 +25,6 @@ uploadDirs.forEach(dir => {
     fs.mkdirSync(dir, { recursive: true });
   }
 });
-
-// Set static FFmpeg binary path (from @ffmpeg-installer)
-const ffmpegPath = require('@ffmpeg-installer/ffmpeg').path;
-ffmpeg.setFfmpegPath(ffmpegPath);
 
 const razorpay = new Razorpay({
   key_id: process.env.RAZORPAY_KEY_ID,
@@ -147,11 +144,10 @@ async function createWatermark(originalPath, outputPath) {
     .toFile(outputPath);
 }
 
-// New video watermark – uses Sharp to render text on a transparent PNG,
-// then overlays it with FFmpeg. No font file required.
+// Video watermark – uses Sharp to render text on a transparent PNG,
+// then overlays it with FFmpeg. No system font required.
 function createVideoWatermark(originalPath, outputPath) {
   return new Promise((resolve, reject) => {
-    // Get video dimensions first
     ffmpeg.ffprobe(originalPath, (err, metadata) => {
       if (err) return reject(err);
 
@@ -163,7 +159,6 @@ function createVideoWatermark(originalPath, outputPath) {
       const text = 'TrustClient PREVIEW';
       const fontSize = Math.floor(width / 12);
 
-      // Build SVG with transparent background (same style as images)
       let textElements = '';
       const rows = 4;
       const cols = 3;
@@ -187,34 +182,27 @@ function createVideoWatermark(originalPath, outputPath) {
         </svg>
       `;
 
-      // Temporary PNG path for the overlay
       const overlayPath = outputPath.replace('.mp4', '-overlay.png');
 
-      // Render the SVG to a transparent PNG
       sharp({
         create: {
           width: width,
           height: height,
           channels: 4,
-          background: { r: 0, g: 0, b: 0, alpha: 0 } // fully transparent
+          background: { r: 0, g: 0, b: 0, alpha: 0 }
         }
       })
       .composite([{ input: Buffer.from(watermarkSvg), gravity: 'center' }])
       .png()
       .toFile(overlayPath)
       .then(() => {
-        // Now overlay the PNG onto the video
         ffmpeg(originalPath)
           .input(overlayPath)
           .complexFilter([
-            {
-              filter: 'overlay',
-              options: { x: 0, y: 0 } // overlay covers entire frame
-            }
+            { filter: 'overlay', options: { x: 0, y: 0 } }
           ])
           .outputOptions('-c:a copy')
           .on('end', () => {
-            // Clean up temporary overlay file
             fs.unlink(overlayPath, () => {});
             resolve();
           })
@@ -310,7 +298,6 @@ app.delete('/freelancer/products/:prod_id', authenticateToken, (req, res) => {
   const prodId = req.params.prod_id;
   const userName = req.freelancer.userName;
 
-  // 1. Fetch product to get file paths
   db.query(
     'SELECT original_file_path, watermark_file_path FROM product WHERE prod_id = ? AND userName = ?',
     [prodId, userName],
@@ -323,7 +310,6 @@ app.delete('/freelancer/products/:prod_id', authenticateToken, (req, res) => {
       const product = results[0];
       const filesToDelete = [product.original_file_path, product.watermark_file_path].filter(Boolean);
 
-      // 2. Delete files from filesystem (ignore errors)
       filesToDelete.forEach(filePath => {
         const fullPath = path.resolve(filePath);
         if (fs.existsSync(fullPath)) {
@@ -335,14 +321,12 @@ app.delete('/freelancer/products/:prod_id', authenticateToken, (req, res) => {
         }
       });
 
-      // 3. Delete associated transactions FIRST to satisfy foreign key
       db.query('DELETE FROM transaction WHERE prod_id = ?', [prodId], (err2) => {
         if (err2) {
           console.error('Delete: failed to remove transactions:', err2);
           return res.status(500).json({ error: 'Failed to delete related transactions' });
         }
 
-        // 4. Now delete the product
         db.query('DELETE FROM product WHERE prod_id = ?', [prodId], (err3) => {
           if (err3) {
             console.error('Delete: DB delete error:', err3);
