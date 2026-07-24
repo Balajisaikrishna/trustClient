@@ -11,6 +11,11 @@ const crypto = require('crypto');
 const Razorpay = require('razorpay');
 const cors = require('cors');
 const fs = require('fs');
+const ffmpegPath = require('@ffmpeg-installer/ffmpeg').path;
+const ffprobePath = require('@ffprobe-installer/ffprobe').path;
+
+ffmpeg.setFfmpegPath(ffmpegPath);
+ffmpeg.setFfprobePath(ffprobePath);
 
 // Ensure upload directories exist
 const uploadDirs = ['uploads/original', 'uploads/preview'];
