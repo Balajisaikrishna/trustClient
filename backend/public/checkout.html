@@ -371,7 +371,7 @@ payBtn.innerText='Pay Now';
                 isVideo = data.previewUrl.endsWith('.mp4');
 
                 document.getElementById('previewContainer').innerHTML = isVideo ?
-                    `<video src="${data.previewUrl}" controls playsinline></video>` :
+                    `<video src="${data.previewUrl}" controls controlsList="nodownload" playsinline></video>` :
                     `<img src="${data.previewUrl}" alt="Preview">`;
 
                 document.getElementById('fullscreenBtn').classList.add('visible');
